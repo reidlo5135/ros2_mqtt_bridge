@@ -18,7 +18,6 @@ include_directories(
   include/${PROJECT_NAME}
   /usr/local/include
   /usr/local/include/mqtt
-  ${generated_path}
 )
 
 find_package(ament_cmake REQUIRED)
@@ -32,9 +31,8 @@ find_library(PAHO_MQTT_CPP_LIB paho-mqttpp3 PATHS /usr/local/lib REQUIRED)
 
 add_executable(
   dynamic_bridge
-  include/factory/factory.hpp
-  include/factory/factory_interface.hpp
   src/ros2_mqtt_bridge/dynamic_bridge.cpp
+  src/main.cpp
 )
 
 ament_target_dependencies(
@@ -49,6 +47,11 @@ ament_target_dependencies(
 target_link_libraries(
   dynamic_bridge
   ${PAHO_MQTT_CPP_LIB} -lpaho-mqtt3as
+)
+
+install(TARGETS
+  dynamic_bridge
+  DESTINATION lib/${PROJECT_NAME}
 )
 
 ament_package()
