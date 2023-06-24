@@ -13,6 +13,7 @@
 #include <mqtt/async_client.h>
 #include <rcutils/logging_macros.h>
 #include <rclcpp/rclcpp.hpp>
+#include <rclcpp/executor.hpp>
 #include <std_msgs/msg/string.hpp>
 #include <std_msgs/msg/header.hpp>
 
@@ -45,7 +46,6 @@ namespace ros2_mqtt_bridge {
             virtual ~BridgeManager();
             void mqtt_publish(const char * mqtt_topic, std::string mqtt_payload);
             void mqtt_subscribe(const char * mqtt_topic);
-            void mqtt_grant_subscription();
     };
 
     class DynamicBridge {
@@ -59,10 +59,10 @@ namespace ros2_mqtt_bridge {
                 const std::string& ros2_topic_name
             ) {
                 if(ros2_node_ptr == nullptr) {
-                    RCUTILS_LOG_INFO_NAMED(ROS_NODE_NAME, "register publisher ros2 node pointer is null \n");
+                    RCUTILS_LOG_INFO_NAMED(ROS_NODE_NAME, "ROS2 register publisher ros2 node pointer is null \n");
                 }
 
-                RCLCPP_INFO(ros2_node_ptr->get_logger(), "register publisher %s", ros2_topic_name.c_str());
+                RCLCPP_INFO(ros2_node_ptr->get_logger(), "ROS2 register publisher %s", ros2_topic_name.c_str());
 
                 typename rclcpp::Publisher<message_type>::SharedPtr ros2_publisher_ptr = ros2_node_ptr->create_publisher<message_type>(
                     ros2_topic_name,
@@ -79,10 +79,10 @@ namespace ros2_mqtt_bridge {
                 std::function<void(std::shared_ptr<message_type>)> ros2_subscription_callback
             ) {
                 if(ros2_node_ptr == nullptr) {
-                    RCUTILS_LOG_INFO_NAMED(ROS_NODE_NAME, "register subscription ros2 node pointer is null \n");
+                    RCUTILS_LOG_INFO_NAMED(ROS_NODE_NAME, "ROS2 register subscription ros2 node pointer is null \n");
                 }
 
-                RCLCPP_INFO(ros2_node_ptr->get_logger(), "register subscription %s", ros2_topic_name.c_str());
+                RCLCPP_INFO(ros2_node_ptr->get_logger(), "ROS2 register subscription %s", ros2_topic_name.c_str());
 
                 typename rclcpp::Subscription<message_type>::SharedPtr ros2_subscription_ptr = ros2_node_ptr->create_subscription<message_type>(
                     ros2_topic_name,
@@ -99,6 +99,7 @@ namespace ros2_mqtt_bridge {
             rclcpp::Node::SharedPtr ros2_node_ptr_;
             std::shared_ptr<ros2_mqtt_bridge::BridgeManager> bridge_manager_ptr_;
             std::shared_ptr<ros2_mqtt_bridge::DynamicBridge> ros2_dynamic_bridge_ptr_;
+            rclcpp::TimerBase::SharedPtr ros2_poll_timer_ptr_;
             std::mutex bridge_mutex_;
         public :
             RCLNode();
