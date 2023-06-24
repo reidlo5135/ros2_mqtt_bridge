@@ -17,8 +17,6 @@ ros2_mqtt_bridge::BridgeManager::BridgeManager(rclcpp::Node::SharedPtr ros2_node
     };
 
     ros2_header_subscription_ptr_ = ros2_dynamic_bridge_ptr->register_subscription<std_msgs::msg::Header>(ros2_node_ptr, "/header", header_callback);
-
-    this->mqtt_grant_subscription();
 }
 
 ros2_mqtt_bridge::BridgeManager::~BridgeManager() {
@@ -31,30 +29,30 @@ void ros2_mqtt_bridge::BridgeManager::mqtt_connect() {
         mqtt_connect_opts.set_clean_session(true);
         mqtt_async_client_.connect(mqtt_connect_opts)->wait_for(std::chrono::seconds(60));
         if(mqtt_async_client_.is_connected()) {
-            RCUTILS_LOG_INFO_NAMED(ROS_NODE_NAME, "MQTT connection success\n");
+            RCUTILS_LOG_INFO_NAMED(ROS_NODE_NAME, "MQTT connection success");
             mqtt_async_client_.set_callback(*this);
         } else {
-            RCUTILS_LOG_INFO_NAMED(ROS_NODE_NAME, "MQTT connection failed... trying to reconnect\n");
+            RCUTILS_LOG_INFO_NAMED(ROS_NODE_NAME, "MQTT connection failed... trying to reconnect");
             mqtt_async_client_.connect(mqtt_connect_opts)->wait_for(std::chrono::seconds(30));
         }
     } catch (const mqtt::exception& mqtt_expn) {
-        RCUTILS_LOG_ERROR_NAMED(ROS_NODE_NAME, "MQTT connection error [%s]\n", mqtt_expn.what());
+        RCUTILS_LOG_ERROR_NAMED(ROS_NODE_NAME, "MQTT connection error [%s]", mqtt_expn.what());
     }
 }
 
 void ros2_mqtt_bridge::BridgeManager::connection_lost(const std::string& mqtt_connection_lost_cause) {
-    RCUTILS_LOG_ERROR_NAMED(ROS_NODE_NAME, "MQTT connection lost with cause [%s]\n", mqtt_connection_lost_cause.c_str());
+    RCUTILS_LOG_ERROR_NAMED(ROS_NODE_NAME, "MQTT connection lost with cause [%s]", mqtt_connection_lost_cause.c_str());
 }
 
 void ros2_mqtt_bridge::BridgeManager::message_arrived(mqtt::const_message_ptr mqtt_message) {
     const std::string& mqtt_topic = mqtt_message->get_topic();
     const std::string& mqtt_payload = mqtt_message->to_string();
 
-    RCUTILS_LOG_INFO_NAMED(ROS_NODE_NAME, "MQTT message arrived \n\t topic [%s] \n\t payload [%s]\n", mqtt_topic.c_str(), mqtt_payload.c_str());
+    RCUTILS_LOG_INFO_NAMED(ROS_NODE_NAME, "MQTT message arrived \n\t topic [%s] \n\t payload [%s]", mqtt_topic.c_str(), mqtt_payload.c_str());
 }
 
 void ros2_mqtt_bridge::BridgeManager::delivery_complete(mqtt::delivery_token_ptr mqtt_delivered_token) {
-    RCUTILS_LOG_INFO_NAMED(ROS_NODE_NAME, "delivery completed with [%s]\n", mqtt_delivered_token);
+    RCUTILS_LOG_INFO_NAMED(ROS_NODE_NAME, "delivery completed with [%s]", mqtt_delivered_token);
 }
 
 void ros2_mqtt_bridge::BridgeManager::mqtt_publish(const char * mqtt_topic, std::string mqtt_payload) {
@@ -64,24 +62,21 @@ void ros2_mqtt_bridge::BridgeManager::mqtt_publish(const char * mqtt_topic, std:
 		mqtt::delivery_token_ptr mqtt_delivery_token_ptr = mqtt_async_client_.publish(mqtt_publish_message_ptr);
         mqtt_delivery_token_ptr->wait();
         if (mqtt_delivery_token_ptr->get_return_code() != mqtt::SUCCESS) {
-            RCUTILS_LOG_ERROR_NAMED(ROS_NODE_NAME, "MQTT publishing error with code [%i]\n", mqtt_delivery_token_ptr->get_return_code());
+            RCUTILS_LOG_ERROR_NAMED(ROS_NODE_NAME, "MQTT publishing error with code [%i]", mqtt_delivery_token_ptr->get_return_code());
         }
 	} catch (const mqtt::exception& mqtt_expn) {
-		RCUTILS_LOG_ERROR_NAMED(ROS_NODE_NAME, "MQTT publishing error with code [%s]\n", mqtt_expn.what());
+		RCUTILS_LOG_ERROR_NAMED(ROS_NODE_NAME, "MQTT publishing error with code [%s]", mqtt_expn.what());
     }
 }
 
 void ros2_mqtt_bridge::BridgeManager::mqtt_subscribe(const char * mqtt_topic) {
     try {
-        RCUTILS_LOG_INFO_NAMED(ROS_NODE_NAME, "MQTT grant subscription with [%s]\n", mqtt_topic);
+        printf("\n");
+        RCUTILS_LOG_INFO_NAMED(ROS_NODE_NAME, "MQTT grant subscription with [%s]", mqtt_topic);
 		mqtt_async_client_.subscribe(mqtt_topic, MQTT_DEFAULT_QOS);
 	} catch (const mqtt::exception& mqtt_expn) {
-        RCUTILS_LOG_ERROR_NAMED(ROS_NODE_NAME, "MQTT grant subscription error [%s]\n", mqtt_expn.what());
+        RCUTILS_LOG_ERROR_NAMED(ROS_NODE_NAME, "MQTT grant subscription error [%s]", mqtt_expn.what());
 	}
-}
-
-void ros2_mqtt_bridge::BridgeManager::mqtt_grant_subscription() {
-    this->mqtt_subscribe("/chatter");
 }
 
 ros2_mqtt_bridge::RCLNode::RCLNode()
@@ -89,6 +84,7 @@ ros2_mqtt_bridge::RCLNode::RCLNode()
     ros2_node_ptr_ = std::shared_ptr<rclcpp::Node>(this, [](rclcpp::Node*){});
     ros2_dynamic_bridge_ptr_ = std::make_shared<ros2_mqtt_bridge::DynamicBridge>();
     bridge_manager_ptr_ = std::make_shared<ros2_mqtt_bridge::BridgeManager>(ros2_node_ptr_, ros2_dynamic_bridge_ptr_);
+    this->get_current_topic_and_types();
 }
 
 ros2_mqtt_bridge::RCLNode::~RCLNode() {
@@ -103,7 +99,7 @@ void ros2_mqtt_bridge::RCLNode::get_current_topic_and_types() {
     std::set<std::string> ros2_already_ignored_topics;
     std::set<std::string> ros2_already_ignored_services;
 
-    auto ros2_poll = [
+    std::function<void()> ros2_poll = [
         this,
         &ros2_publishers,
         &ros2_subscriptions,
@@ -114,7 +110,8 @@ void ros2_mqtt_bridge::RCLNode::get_current_topic_and_types() {
         std::map<std::string, std::vector<std::string, std::allocator<std::string>>> ros2_topics = ros2_node_ptr_->get_topic_names_and_types();
 
         std::set<std::string> ros2_ignored_topics;
-        ros2_ignored_topics.insert("parameter_events");
+        ros2_ignored_topics.insert("/parameter_events");
+        ros2_ignored_topics.insert("/rosout");
 
         std::map<std::string, std::string> ros2_current_publishers;
         std::map<std::string, std::string> ros2_current_subscriptions;
@@ -143,11 +140,13 @@ void ros2_mqtt_bridge::RCLNode::get_current_topic_and_types() {
 
                     ros2_already_ignored_topics.insert(ros2_topic_name);
                 }
+
                 continue;
             }
 
-            bridge_manager_ptr_->mqtt_subscribe(ros2_topic_name.c_str());
-
+            const char * mqtt_subscription_topic = ros2_topic_name.c_str();
+            bridge_manager_ptr_->mqtt_subscribe(mqtt_subscription_topic);
+           
             size_t ros2_publisher_count = ros2_node_ptr_->count_publishers(ros2_topic_name);
             size_t ros2_subscription_count = ros2_node_ptr_->count_subscribers(ros2_topic_name);
 
@@ -160,14 +159,14 @@ void ros2_mqtt_bridge::RCLNode::get_current_topic_and_types() {
             }
 
 
-            // RCLCPP_INFO(
-            //     ros2_node_ptr->get_logger(),
-            //     "ROS 2: %s (%s) [%zu publishers, %zu subscriptions]\n",
-            //     ros2_topic_name.c_str(), 
-            //     ros2_topic_type.c_str(),
-            //     ros2_publisher_count,
-            //     ros2_subscription_count
-            // );
+            RCLCPP_INFO(
+                ros2_node_ptr_->get_logger(),
+                "ROS2 dynamic bridge current status \n\ttopic : [%s]\n\ttypes : [%s]\n\tcount : [%zu publishers, %zu subscriptions]\n",
+                ros2_topic_name.c_str(), 
+                ros2_topic_type.c_str(),
+                ros2_publisher_count,
+                ros2_subscription_count
+            );
 
             {
                 std::lock_guard<std::mutex> lock(bridge_mutex_);
@@ -177,5 +176,5 @@ void ros2_mqtt_bridge::RCLNode::get_current_topic_and_types() {
         }
     };
 
-    auto ros2_poll_timer = ros2_node_ptr_->create_wall_timer(std::chrono::seconds(1), ros2_poll);
+    ros2_poll();
 }
