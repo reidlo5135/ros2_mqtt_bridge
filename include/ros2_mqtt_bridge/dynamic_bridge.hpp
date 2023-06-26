@@ -19,6 +19,7 @@
 
 #define ROS_NODE_NAME "ros2_mqtt_bridge"
 #define ROS_DEAULT_QOS 10
+#define ROS_CHATTER_TOPIC "/chatter"
 
 #define MQTT_ADDRESS    "tcp://localhost:1883"
 #define MQTT_CLIENT_ID    "ros2_mqtt_bridge"
@@ -36,7 +37,6 @@ namespace ros2_mqtt_bridge {
             mqtt::async_client mqtt_async_client_;
             rclcpp::Publisher<std_msgs::msg::String>::SharedPtr ros2_chatter_publisher_ptr_;
             rclcpp::Subscription<std_msgs::msg::String>::SharedPtr ros2_chatter_subscription_ptr_;
-            rclcpp::Subscription<std_msgs::msg::Header>::SharedPtr ros2_header_subscription_ptr_;
             void mqtt_connect();
             void connection_lost(const std::string& mqtt_connection_lost_cause) override;
             void message_arrived(mqtt::const_message_ptr mqtt_message) override;
@@ -60,9 +60,10 @@ namespace ros2_mqtt_bridge {
             ) {
                 if(ros2_node_ptr == nullptr) {
                     RCUTILS_LOG_INFO_NAMED(ROS_NODE_NAME, "ROS2 register publisher ros2 node pointer is null \n");
+                    return nullptr;
                 }
 
-                RCLCPP_INFO(ros2_node_ptr->get_logger(), "ROS2 register publisher %s", ros2_topic_name.c_str());
+                RCLCPP_INFO(ros2_node_ptr->get_logger(), "ROS2 register publisher [%s]", ros2_topic_name.c_str());
 
                 typename rclcpp::Publisher<message_type>::SharedPtr ros2_publisher_ptr = ros2_node_ptr->create_publisher<message_type>(
                     ros2_topic_name,
@@ -80,9 +81,10 @@ namespace ros2_mqtt_bridge {
             ) {
                 if(ros2_node_ptr == nullptr) {
                     RCUTILS_LOG_INFO_NAMED(ROS_NODE_NAME, "ROS2 register subscription ros2 node pointer is null \n");
+                    return nullptr;
                 }
 
-                RCLCPP_INFO(ros2_node_ptr->get_logger(), "ROS2 register subscription %s", ros2_topic_name.c_str());
+                RCLCPP_INFO(ros2_node_ptr->get_logger(), "ROS2 register subscription [%s]", ros2_topic_name.c_str());
 
                 typename rclcpp::Subscription<message_type>::SharedPtr ros2_subscription_ptr = ros2_node_ptr->create_subscription<message_type>(
                     ros2_topic_name,

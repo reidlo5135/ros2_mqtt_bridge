@@ -11,12 +11,6 @@ ros2_mqtt_bridge::BridgeManager::BridgeManager(rclcpp::Node::SharedPtr ros2_node
     };
 
     ros2_chatter_subscription_ptr_ = ros2_dynamic_bridge_ptr->register_subscription<std_msgs::msg::String>(ros2_node_ptr, "/chatter", chatter_callback);
-
-    std::function<void(std::shared_ptr<std_msgs::msg::Header>)> header_callback = [this, ros2_node_ptr](const std_msgs::msg::Header::SharedPtr header_callback_data) {
-        RCLCPP_INFO(ros2_node_ptr->get_logger(), "header callback : %s", header_callback_data->frame_id.c_str());
-    };
-
-    ros2_header_subscription_ptr_ = ros2_dynamic_bridge_ptr->register_subscription<std_msgs::msg::Header>(ros2_node_ptr, "/header", header_callback);
 }
 
 ros2_mqtt_bridge::BridgeManager::~BridgeManager() {
@@ -48,7 +42,7 @@ void ros2_mqtt_bridge::BridgeManager::message_arrived(mqtt::const_message_ptr mq
     const std::string& mqtt_topic = mqtt_message->get_topic();
     const std::string& mqtt_payload = mqtt_message->to_string();
 
-    RCUTILS_LOG_INFO_NAMED(ROS_NODE_NAME, "MQTT message arrived \n\t topic [%s] \n\t payload [%s]", mqtt_topic.c_str(), mqtt_payload.c_str());
+    RCUTILS_LOG_INFO_NAMED(ROS_NODE_NAME, "MQTT message arrived \n\t topic : [%s] \n\t payload : [%s]", mqtt_topic.c_str(), mqtt_payload.c_str());
 }
 
 void ros2_mqtt_bridge::BridgeManager::delivery_complete(mqtt::delivery_token_ptr mqtt_delivered_token) {
@@ -146,6 +140,8 @@ void ros2_mqtt_bridge::RCLNode::get_current_topic_and_types() {
 
             const char * mqtt_subscription_topic = ros2_topic_name.c_str();
             bridge_manager_ptr_->mqtt_subscribe(mqtt_subscription_topic);
+
+            
            
             size_t ros2_publisher_count = ros2_node_ptr_->count_publishers(ros2_topic_name);
             size_t ros2_subscription_count = ros2_node_ptr_->count_subscribers(ros2_topic_name);
