@@ -1,5 +1,21 @@
+/**
+ * @file dynamic_bridge.cpp
+ * @author reidlo(naru5135@wavem.net)
+ * @date 2023-06-27
+ * @brief implementation file for rclcpp::Node
+*/
+
+/**
+ * @brief include/ros2_mqtt_bridge/dynamic_bridge.hpp include area
+*/
+
 #include "ros2_mqtt_bridge/dynamic_bridge.hpp"
 
+/**
+ * Create a new this class' instance and extends mqtt::async_client
+ * @brief Default Constructor
+ * @see mqtt::async_client
+*/
 ros2_mqtt_bridge::BridgeManager::BridgeManager(rclcpp::Node::SharedPtr rcl_node_ptr, std::shared_ptr<ros2_mqtt_bridge::DynamicBridge> rcl_dynamic_bridge_ptr)
 : mqtt_async_client_(MQTT_ADDRESS, MQTT_CLIENT_ID) {
     this->mqtt_connect();
@@ -14,10 +30,18 @@ ros2_mqtt_bridge::BridgeManager::BridgeManager(rclcpp::Node::SharedPtr rcl_node_
     rcl_chatter_subscription_ptr_ = rcl_dynamic_bridge_ptr->register_subscription<std_msgs::msg::String>(rcl_node_ptr, RCL_CHATTER_TOPIC, rcl_chatter_callback);
 }
 
+/**
+* Destroy this class' instance
+* @brief Default Destructor
+*/
 ros2_mqtt_bridge::BridgeManager::~BridgeManager() {
 
 }
 
+/**
+* @brief function for MQTT connection
+* @return void
+*/
 void ros2_mqtt_bridge::BridgeManager::mqtt_connect() {
     try {
         mqtt::connect_options mqtt_connect_opts;
@@ -37,11 +61,21 @@ void ros2_mqtt_bridge::BridgeManager::mqtt_connect() {
     }
 }
 
+/**
+* @brief overrided function for handle when MQTT connection lost
+* @param mqtt_connection_lost_cause lost cause of MQTT connection
+* @return void
+*/
 void ros2_mqtt_bridge::BridgeManager::connection_lost(const std::string & mqtt_connection_lost_cause) {
     RCUTILS_LOG_ERROR_NAMED(RCL_NODE_NAME, "MQTT connection lost with cause [%s]", mqtt_connection_lost_cause.c_str());
     RCLCPP_LINE_ERROR();
 }
 
+/**
+* @brief overrided function for handle when MQTT message arrived
+* @param mqtt_message callback for MQTT message
+* @return void
+*/
 void ros2_mqtt_bridge::BridgeManager::message_arrived(mqtt::const_message_ptr mqtt_message) {
     const std::string & mqtt_topic = mqtt_message->get_topic();
     const std::string & mqtt_payload = mqtt_message->to_string();
@@ -55,11 +89,22 @@ void ros2_mqtt_bridge::BridgeManager::message_arrived(mqtt::const_message_ptr mq
     RCLCPP_LINE_INFO();
 }
 
+/**
+* @brief overrided function for handle when MQTT delivery completed
+* @param mqtt_delivered_token callback for MQTT delivery token
+* @return void
+*/
 void ros2_mqtt_bridge::BridgeManager::delivery_complete(mqtt::delivery_token_ptr mqtt_delivered_token) {
     RCUTILS_LOG_INFO_NAMED(RCL_NODE_NAME, "delivery completed with [%s]", mqtt_delivered_token);
     RCLCPP_LINE_INFO();
 }
 
+/**
+* @brief function for MQTT publish
+* @param mqtt_topic target MQTT topic
+* @param mqtt_payload target MQTT payload
+* @return void
+*/
 void ros2_mqtt_bridge::BridgeManager::mqtt_publish(const char * mqtt_topic, std::string mqtt_payload) {
     try {
 		mqtt::message_ptr mqtt_publish_message_ptr = mqtt::make_message(mqtt_topic, mqtt_payload);
@@ -76,6 +121,11 @@ void ros2_mqtt_bridge::BridgeManager::mqtt_publish(const char * mqtt_topic, std:
     }
 }
 
+/**
+* @brief function for MQTT subscribe
+* @param mqtt_topic target MQTT topic
+* @return void
+*/
 void ros2_mqtt_bridge::BridgeManager::mqtt_subscribe(const char * mqtt_topic) {
     try {
         printf("\n");
@@ -88,19 +138,44 @@ void ros2_mqtt_bridge::BridgeManager::mqtt_subscribe(const char * mqtt_topic) {
 	}
 }
 
+/**
+* Create a new this class' instance and extends rclcpp::Node
+* @brief Default Constructor
+* @see rclcpp::Node
+*/
 ros2_mqtt_bridge::RCLNode::RCLNode()
 : Node(RCL_NODE_NAME) {
     rcl_node_ptr_ = std::shared_ptr<rclcpp::Node>(this, [](rclcpp::Node*){});
     rcl_dynamic_bridge_ptr_ = std::make_shared<ros2_mqtt_bridge::DynamicBridge>();
     bridge_manager_ptr_ = std::make_shared<ros2_mqtt_bridge::BridgeManager>(rcl_node_ptr_, rcl_dynamic_bridge_ptr_);
-    this->get_current_topic_and_types();
+    this->get_current_topics_and_types();
 }
 
+/**
+* Destroy this class' instance
+* @brief Default Destructor
+*/
 ros2_mqtt_bridge::RCLNode::~RCLNode() {
 
 }
 
-void ros2_mqtt_bridge::RCLNode::get_current_topic_and_types() {
+/**
+* Function for handle signal when program exit
+* @param sig The signal of input
+* @return void
+* @see signal.h
+*/
+void ros2_mqtt_bridge::RCLNode::sig_handler(int sig) {
+    RCUTILS_LOG_INFO_NAMED(RCL_NODE_NAME, "\n ros2_mqtt_bridge stopped with SIG [%i] \n", sig);
+	signal(sig, SIG_IGN);
+	exit(0);
+}
+
+/**
+* @brief function for get current ROS2 topics and types
+* @return void
+*/
+void ros2_mqtt_bridge::RCLNode::get_current_topics_and_types() {
     std::map<std::string, std::string> rcl_publishers;
     std::map<std::string, std::string> rcl_subscriptions;
     std::map<std::string, std::map<std::string, std::string>> rcl_services;
