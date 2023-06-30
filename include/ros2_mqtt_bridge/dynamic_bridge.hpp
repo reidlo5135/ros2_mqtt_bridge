@@ -60,7 +60,7 @@ namespace ros2_mqtt_bridge {
             void message_arrived(mqtt::const_message_ptr mqtt_message) override;
             void delivery_complete(mqtt::delivery_token_ptr mqtt_delivered_token) override;
         public :
-            BridgeManager(rclcpp::Node::SharedPtr rcl_node_ptr, std::shared_ptr<ros2_mqtt_bridge::DynamicBridge> rcl_dynamic_bridge_ptr);
+            explicit BridgeManager(rclcpp::Node::SharedPtr rcl_node_ptr, std::shared_ptr<ros2_mqtt_bridge::DynamicBridge> rcl_dynamic_bridge_ptr);
             virtual ~BridgeManager();
             void mqtt_publish(const char * mqtt_topic, std::string mqtt_payload);
             void mqtt_subscribe(const char * mqtt_topic);
@@ -68,7 +68,7 @@ namespace ros2_mqtt_bridge {
 
     class DynamicBridge {
         public :
-            DynamicBridge(){};
+            explicit DynamicBridge(){};
             virtual ~DynamicBridge(){};
 
             template<typename message_type>
@@ -94,7 +94,7 @@ namespace ros2_mqtt_bridge {
             template<typename message_type>
             typename rclcpp::Subscription<message_type>::SharedPtr register_subscription(
                 rclcpp::Node::SharedPtr rcl_node_ptr,
-                const std::string& rcl_topic_name,
+                const std::string & rcl_topic_name,
                 std::function<void(std::shared_ptr<message_type>)> rcl_subscription_callback
             ) {
                 if(rcl_node_ptr == nullptr) {
@@ -122,7 +122,7 @@ namespace ros2_mqtt_bridge {
             rclcpp::TimerBase::SharedPtr rcl_poll_timer_ptr_;
             std::mutex bridge_mutex_;
         public :
-            RCLNode();
+            explicit RCLNode();
             virtual ~RCLNode();
             void get_current_topic_and_types();
     };
