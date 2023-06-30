@@ -32,19 +32,19 @@ void ros2_mqtt_bridge::BridgeManager::mqtt_connect() {
             RCLCPP_LINE_INFO();
             mqtt_async_client_.connect(mqtt_connect_opts)->wait_for(std::chrono::seconds(30));
         }
-    } catch (const mqtt::exception& mqtt_expn) {
+    } catch (const mqtt::exception & mqtt_expn) {
         RCUTILS_LOG_ERROR_NAMED(RCL_NODE_NAME, "MQTT connection error [%s]", mqtt_expn.what());
     }
 }
 
-void ros2_mqtt_bridge::BridgeManager::connection_lost(const std::string& mqtt_connection_lost_cause) {
+void ros2_mqtt_bridge::BridgeManager::connection_lost(const std::string & mqtt_connection_lost_cause) {
     RCUTILS_LOG_ERROR_NAMED(RCL_NODE_NAME, "MQTT connection lost with cause [%s]", mqtt_connection_lost_cause.c_str());
     RCLCPP_LINE_ERROR();
 }
 
 void ros2_mqtt_bridge::BridgeManager::message_arrived(mqtt::const_message_ptr mqtt_message) {
-    const std::string& mqtt_topic = mqtt_message->get_topic();
-    const std::string& mqtt_payload = mqtt_message->to_string();
+    const std::string & mqtt_topic = mqtt_message->get_topic();
+    const std::string & mqtt_payload = mqtt_message->to_string();
 
     RCUTILS_LOG_INFO_NAMED(
         RCL_NODE_NAME,
@@ -82,7 +82,7 @@ void ros2_mqtt_bridge::BridgeManager::mqtt_subscribe(const char * mqtt_topic) {
         RCUTILS_LOG_INFO_NAMED(RCL_NODE_NAME, "MQTT grant subscription with [%s]", mqtt_topic);
         RCLCPP_LINE_INFO();
 		mqtt_async_client_.subscribe(mqtt_topic, MQTT_DEFAULT_QOS);
-	} catch (const mqtt::exception& mqtt_expn) {
+	} catch (const mqtt::exception & mqtt_expn) {
         RCUTILS_LOG_ERROR_NAMED(RCL_NODE_NAME, "MQTT grant subscription error [%s]", mqtt_expn.what());
         RCLCPP_LINE_ERROR();
 	}
@@ -130,8 +130,8 @@ void ros2_mqtt_bridge::RCLNode::get_current_topic_and_types() {
                 continue;
             }
 
-            const std::string& rcl_topic_name = rcl_topic_and_types.first;
-            std::string& rcl_topic_type = rcl_topic_and_types.second[0];
+            const std::string & rcl_topic_name = rcl_topic_and_types.first;
+            std::string & rcl_topic_type = rcl_topic_and_types.second[0];
 
             if (rcl_topic_and_types.second.size() > 1) {
                 if (rcl_already_ignored_topics.count(rcl_topic_name) == 0) {

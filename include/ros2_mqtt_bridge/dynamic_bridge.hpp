@@ -94,7 +94,7 @@ namespace ros2_mqtt_bridge {
             template<typename message_type>
             typename rclcpp::Subscription<message_type>::SharedPtr register_subscription(
                 rclcpp::Node::SharedPtr rcl_node_ptr,
-                const std::string& rcl_topic_name,
+                const std::string & rcl_topic_name,
                 std::function<void(std::shared_ptr<message_type>)> rcl_subscription_callback
             ) {
                 if(rcl_node_ptr == nullptr) {
