@@ -2,10 +2,10 @@
 
 int main(int argc, char** argv) {
     rclcpp::init(argc, argv);
-    std::shared_ptr<rclcpp::Node> ros2_node = std::make_shared<ros2_mqtt_bridge::RCLNode>();
-    rclcpp::executors::SingleThreadedExecutor ros2_single_executor;
+    std::shared_ptr<rclcpp::Node> rcl_node_ptr = std::make_shared<ros2_mqtt_bridge::RCLNode>();
+    rclcpp::executors::SingleThreadedExecutor rcl_single_thread_executor;
     while(rclcpp::ok()) {
-        ros2_single_executor.spin_node_once(ros2_node);
+        rcl_single_thread_executor.spin_node_once(rcl_node_ptr);
     }
     rclcpp::shutdown();
     return 0;   
