@@ -16,17 +16,21 @@
  * @brief Default Constructor
  * @see mqtt::async_client
 */
-ros2_mqtt_bridge::MQTTConnectionManager::MQTTConnectionManager(rclcpp::Node::SharedPtr rcl_node_ptr, std::shared_ptr<ros2_mqtt_bridge::RCLConnectionManager> rcl_connection_manager_ptr)
-: mqtt_async_client_(MQTT_ADDRESS, MQTT_CLIENT_ID) {
+ros2_mqtt_bridge::RCLMQTTBridgeManager::RCLMQTTBridgeManager(
+    rclcpp::Node::SharedPtr rcl_node_ptr, 
+    std::shared_ptr<ros2_mqtt_bridge::RCLConnectionManager> rcl_connection_manager_ptr
+) : rcl_node_ptr_(rcl_node_ptr),
+rcl_connection_manager_ptr_(rcl_connection_manager_ptr),
+mqtt_async_client_(MQTT_ADDRESS, MQTT_CLIENT_ID) {
     this->mqtt_connect();
-    rcl_chatter_publisher_ptr_ = rcl_connection_manager_ptr->register_publisher<std_msgs::msg::String>(rcl_node_ptr, RCL_CHATTER_TOPIC);
+    this->bridge_rcl_with_mqtt_after_get_current_topics_and_types();
 }
 
 /**
 * Destroy this class' instance
 * @brief Default Destructor
 */
-ros2_mqtt_bridge::MQTTConnectionManager::~MQTTConnectionManager() {
+ros2_mqtt_bridge::RCLMQTTBridgeManager::~RCLMQTTBridgeManager() {
 
 }
 
@@ -34,7 +38,7 @@ ros2_mqtt_bridge::MQTTConnectionManager::~MQTTConnectionManager() {
 * @brief function for MQTT connection
 * @return void
 */
-void ros2_mqtt_bridge::MQTTConnectionManager::mqtt_connect() {
+void ros2_mqtt_bridge::RCLMQTTBridgeManager::mqtt_connect() {
     try {
         mqtt::connect_options mqtt_connect_opts;
         mqtt_connect_opts.set_clean_session(true);
@@ -58,7 +62,7 @@ void ros2_mqtt_bridge::MQTTConnectionManager::mqtt_connect() {
 * @param mqtt_connection_lost_cause lost cause of MQTT connection
 * @return void
 */
-void ros2_mqtt_bridge::MQTTConnectionManager::connection_lost(const std::string & mqtt_connection_lost_cause) {
+void ros2_mqtt_bridge::RCLMQTTBridgeManager::connection_lost(const std::string & mqtt_connection_lost_cause) {
     RCUTILS_LOG_ERROR_NAMED(RCL_NODE_NAME, "MQTT connection lost with cause [%s]", mqtt_connection_lost_cause.c_str());
     RCLCPP_LINE_ERROR();
 }
@@ -68,7 +72,7 @@ void ros2_mqtt_bridge::MQTTConnectionManager::connection_lost(const std::string 
 * @param mqtt_message callback for MQTT message
 * @return void
 */
-void ros2_mqtt_bridge::MQTTConnectionManager::message_arrived(mqtt::const_message_ptr mqtt_message) {
+void ros2_mqtt_bridge::RCLMQTTBridgeManager::message_arrived(mqtt::const_message_ptr mqtt_message) {
     const std::string & mqtt_topic = mqtt_message->get_topic();
     const std::string & mqtt_payload = mqtt_message->to_string();
 
@@ -86,7 +90,7 @@ void ros2_mqtt_bridge::MQTTConnectionManager::message_arrived(mqtt::const_messag
 * @param mqtt_delivered_token callback for MQTT delivery token
 * @return void
 */
-void ros2_mqtt_bridge::MQTTConnectionManager::delivery_complete(mqtt::delivery_token_ptr mqtt_delivered_token) {
+void ros2_mqtt_bridge::RCLMQTTBridgeManager::delivery_complete(mqtt::delivery_token_ptr mqtt_delivered_token) {
     RCUTILS_LOG_INFO_NAMED(RCL_NODE_NAME, "delivery completed with [%s]", mqtt_delivered_token);
     RCLCPP_LINE_INFO();
 }
@@ -97,7 +101,7 @@ void ros2_mqtt_bridge::MQTTConnectionManager::delivery_complete(mqtt::delivery_t
 * @param mqtt_payload target MQTT payload
 * @return void
 */
-void ros2_mqtt_bridge::MQTTConnectionManager::mqtt_publish(const char * mqtt_topic, std::string mqtt_payload) {
+void ros2_mqtt_bridge::RCLMQTTBridgeManager::mqtt_publish(const char * mqtt_topic, std::string mqtt_payload) {
     try {
 		mqtt::message_ptr mqtt_publish_message_ptr = mqtt::make_message(mqtt_topic, mqtt_payload);
 		mqtt_publish_message_ptr->set_qos(MQTT_DEFAULT_QOS);
@@ -118,7 +122,7 @@ void ros2_mqtt_bridge::MQTTConnectionManager::mqtt_publish(const char * mqtt_top
 * @param mqtt_topic target MQTT topic
 * @return void
 */
-void ros2_mqtt_bridge::MQTTConnectionManager::mqtt_subscribe(const char * mqtt_topic) {
+void ros2_mqtt_bridge::RCLMQTTBridgeManager::mqtt_subscribe(const char * mqtt_topic) {
     try {
         printf("\n");
         RCUTILS_LOG_INFO_NAMED(RCL_NODE_NAME, "MQTT grant subscription with [%s]", mqtt_topic);
@@ -130,44 +134,7 @@ void ros2_mqtt_bridge::MQTTConnectionManager::mqtt_subscribe(const char * mqtt_t
 	}
 }
 
-/**
-* Create a new this class' instance and extends rclcpp::Node
-* @brief Default Constructor
-* @see rclcpp::Node
-*/
-ros2_mqtt_bridge::RCLNode::RCLNode()
-: Node(RCL_NODE_NAME) {
-    rcl_node_ptr_ = std::shared_ptr<rclcpp::Node>(this, [](rclcpp::Node*){});
-    rcl_connection_manager_ptr_ = std::make_shared<ros2_mqtt_bridge::RCLConnectionManager>();
-    mqtt_connection_manager_ptr_ = std::make_shared<ros2_mqtt_bridge::MQTTConnectionManager>(rcl_node_ptr_, rcl_connection_manager_ptr_);
-    this->get_current_topics_and_types();
-}
-
-/**
-* Destroy this class' instance
-* @brief Default Destructor
-*/
-ros2_mqtt_bridge::RCLNode::~RCLNode() {
-
-}
-
-/**
-* Function for handle signal when program exit
-* @param sig The signal of input
-* @return void
-* @see signal.h
-*/
-void ros2_mqtt_bridge::RCLNode::sig_handler(int sig) {
-    RCUTILS_LOG_INFO_NAMED(RCL_NODE_NAME, "\n ros2_mqtt_bridge stopped with SIG [%i] \n", sig);
-	signal(sig, SIG_IGN);
-	exit(0);
-}
-
-/**
-* @brief function for get current ROS2 topics and types
-* @return void
-*/
-void ros2_mqtt_bridge::RCLNode::get_current_topics_and_types() {
+void ros2_mqtt_bridge::RCLMQTTBridgeManager::bridge_rcl_with_mqtt_after_get_current_topics_and_types() {
     std::map<std::string, std::string> rcl_publishers;
     std::map<std::string, std::string> rcl_subscriptions;
     std::map<std::string, std::map<std::string, std::string>> rcl_services;
@@ -175,7 +142,7 @@ void ros2_mqtt_bridge::RCLNode::get_current_topics_and_types() {
     std::set<std::string> rcl_already_ignored_topics;
     std::set<std::string> rcl_already_ignored_services;
 
-    std::function<void()> rcl_lambda = [
+    std::function<void()> rcl_bridge_lambda = [
         this,
         &rcl_publishers,
         &rcl_subscriptions,
@@ -242,28 +209,31 @@ void ros2_mqtt_bridge::RCLNode::get_current_topics_and_types() {
             );
             RCLCPP_LINE_INFO();
 
-            const char * mqtt_subscription_topic = rcl_topic_name.c_str();
-            mqtt_connection_manager_ptr_->mqtt_subscribe(mqtt_subscription_topic);
+            // const char * mqtt_subscription_topic = rcl_topic_name.c_str();
+            // this->mqtt_subscribe(mqtt_subscription_topic);
 
-            if(rcl_topic_type == RCL_STD_MSGS_STRING_TYPE) {
-                using rcl_message_type_t = std_msgs::msg::String;
+            if(rcl_topic_type.find(RCL_STD_MSGS_TYPE) != std::string::npos) {
+                if(rcl_topic_name == RCL_CHATTER_TOPIC) {
+                    using rcl_message_type_t = std_msgs::msg::String;
 
-                if(rcl_topic_name.find(RCL_CHATTER_TOPIC)) {
-                    std::function<void(std::shared_ptr<rcl_message_type_t>)> rcl_chatter_callback = [this, &rcl_topic_name](const std_msgs::msg::String::SharedPtr rcl_chatter_callback_data) {
-                        RCLCPP_INFO(rcl_node_ptr_->get_logger(), "rcl [%s] subscription callback : [%s]", RCL_CHATTER_TOPIC, rcl_chatter_callback_data->data.c_str());
+                    std::function<void(std::shared_ptr<rcl_message_type_t>)> rcl_chatter_callback = [this, rcl_topic_name](const std_msgs::msg::String::SharedPtr rcl_chatter_callback_data_ptr) {
+                        RCLCPP_INFO(rcl_node_ptr_->get_logger(), "rcl [%s] subscription callback : [%s]", rcl_topic_name.c_str(), rcl_chatter_callback_data_ptr->data.c_str());
                         RCLCPP_LINE_INFO();
-                        mqtt_connection_manager_ptr_->mqtt_publish(rcl_topic_name.c_str(), rcl_chatter_callback_data->data.c_str());
+                        this->mqtt_publish(rcl_topic_name.c_str(), rcl_chatter_callback_data_ptr->data.c_str());
                     };
 
                     rcl_chatter_subscription_ptr_ = rcl_connection_manager_ptr_->register_subscription<rcl_message_type_t>(rcl_node_ptr_, rcl_topic_name, rcl_chatter_callback);
                 }
-            } else if(rcl_topic_name.find("nav_msgs/msg/Odometry") != std::string::npos) {
-                if(rcl_topic_name == "/odom") {
+            } else if(rcl_topic_name.find("nav_msgs/msg/") != std::string::npos) {
+                if(rcl_topic_name == RCL_ODOM_TOPIC) {
                     using rcl_message_type_t = nav_msgs::msg::Odometry;
 
-                    std::function<void(std::shared_ptr<rcl_message_type_t>)> rcl_odom_callback = [this, &rcl_topic_name](const nav_msgs::msg::Odometry::SharedPtr rcl_odom_callback_data_ptr) {
-                        
+                    std::function<void(std::shared_ptr<rcl_message_type_t>)> rcl_odom_callback = [this, rcl_topic_name](const nav_msgs::msg::Odometry::SharedPtr rcl_odom_callback_data_ptr) {
+                        RCLCPP_INFO(rcl_node_ptr_->get_logger(), "rcl [%s] subscription callback : [%s]", rcl_topic_name.c_str(), rcl_odom_callback_data_ptr->child_frame_id);
+                        RCLCPP_LINE_INFO();
                     };
+                } else if(rcl_topic_name == "/path") {
+
                 }
             }
 
@@ -275,5 +245,37 @@ void ros2_mqtt_bridge::RCLNode::get_current_topics_and_types() {
         }
     };
 
-    rcl_lambda();
+    rcl_bridge_lambda();
+}
+
+/**
+* Create a new this class' instance and extends rclcpp::Node
+* @brief Default Constructor
+* @see rclcpp::Node
+*/
+ros2_mqtt_bridge::RCLNode::RCLNode()
+: Node(RCL_NODE_NAME) {
+    rcl_node_ptr_ = std::shared_ptr<rclcpp::Node>(this, [](rclcpp::Node*){});
+    rcl_connection_manager_ptr_ = std::make_shared<ros2_mqtt_bridge::RCLConnectionManager>();
+    rcl_mqtt_bridge_manager_ptr_ = std::make_shared<ros2_mqtt_bridge::RCLMQTTBridgeManager>(rcl_node_ptr_, rcl_connection_manager_ptr_);
+}
+
+/**
+* Destroy this class' instance
+* @brief Default Destructor
+*/
+ros2_mqtt_bridge::RCLNode::~RCLNode() {
+
+}
+
+/**
+* Function for handle signal_input when program exit
+* @param signal_input The signal_input of input
+* @return void
+* @see signal_input.h
+*/
+void ros2_mqtt_bridge::RCLNode::sig_handler(int signal_input) {
+    RCUTILS_LOG_INFO_NAMED(RCL_NODE_NAME, "\n ros2_mqtt_bridge stopped with SIG [%i] \n", signal_input);
+	signal(signal_input, SIG_IGN);
+	exit(RCL_EXIT_FLAG);
 }
