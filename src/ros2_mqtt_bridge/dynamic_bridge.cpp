@@ -192,11 +192,55 @@ void ros2_mqtt_bridge::RCLMQTTBridgeManager::bridge_rcl_with_mqtt_after_get_curr
             size_t rcl_subscription_count = rcl_node_ptr_->count_subscribers(rcl_topic_name);
 
             if (rcl_publisher_count) {
+                RCLCPP_INFO(
+                    rcl_node_ptr_->get_logger(),
+                    "rcl found [%s]\n\ttopic : [%s]\n\ttype : [%s]",
+                    RCL_PUBLISHER_FLAG,
+                    rcl_topic_name.c_str(),
+                    rcl_topic_type.c_str()
+                );
+                RCLCPP_LINE_INFO();
                 rcl_current_publishers[rcl_topic_name] = rcl_topic_type;
+            } else {
+                RCLCPP_ERROR(rcl_node_ptr_->get_logger(), "rcl [%s]s is empty...", RCL_PUBLISHER_FLAG);
+                RCLCPP_LINE_ERROR();
+            }
+
+            for (std::map<std::string, std::string>::iterator it = rcl_current_publishers.begin();it != rcl_current_publishers.end();++it) {
+                RCLCPP_INFO(
+                    rcl_node_ptr_->get_logger(), 
+                    "rcl current [%ss] map\n\ttopic : [%s]\n\ttype : [%s]",
+                    RCL_PUBLISHER_FLAG,
+                    it->first.c_str(),
+                    it->second.c_str()
+                );
+                RCLCPP_LINE_INFO();
             }
 
             if (rcl_subscription_count) {
+                RCLCPP_INFO(
+                    rcl_node_ptr_->get_logger(),
+                    "rcl found [%s]\n\ttopic : [%s]\n\ttype : [%s]",
+                    RCL_SUBSCRIPTION_FLAG,
+                    rcl_topic_name.c_str(),
+                    rcl_topic_type.c_str()
+                );
+                RCLCPP_LINE_INFO();
                 rcl_current_subscriptions[rcl_topic_name] = rcl_topic_type;
+            } else {
+                RCLCPP_ERROR(rcl_node_ptr_->get_logger(), "rcl [%s]s is empty...", RCL_SUBSCRIPTION_FLAG);
+                RCLCPP_LINE_ERROR();
+            }
+
+            for (std::map<std::string, std::string>::iterator it = rcl_current_subscriptions.begin();it != rcl_current_subscriptions.end();++it) {
+                RCLCPP_INFO(
+                    rcl_node_ptr_->get_logger(), 
+                    "rcl current [%ss] map\n\ttopic : [%s]\n\ttype : [%s]",
+                    RCL_SUBSCRIPTION_FLAG,
+                    it->first.c_str(),
+                    it->second.c_str()
+                );
+                RCLCPP_LINE_INFO();
             }
 
             RCLCPP_INFO(
