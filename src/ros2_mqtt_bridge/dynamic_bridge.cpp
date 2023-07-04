@@ -1,3 +1,17 @@
+// Copyright [2023] [wavem-reidlo]
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 /**
  * @file dynamic_bridge.cpp
  * @author reidlo(naru5135@wavem.net)
@@ -109,7 +123,7 @@ void ros2_mqtt_bridge::RCLMQTTBridgeManager::message_arrived(mqtt::const_message
 * @return void
 */
 void ros2_mqtt_bridge::RCLMQTTBridgeManager::delivery_complete(mqtt::delivery_token_ptr mqtt_delivered_token) {
-    RCUTILS_LOG_INFO_NAMED(RCL_NODE_NAME, "delivery completed with [%s]", mqtt_delivered_token);
+    RCUTILS_LOG_INFO_NAMED(RCL_NODE_NAME, "MQTT delivery completed with [%s]", mqtt_delivered_token);
     RCLCPP_LINE_INFO();
 }
 
@@ -183,7 +197,7 @@ void ros2_mqtt_bridge::RCLMQTTBridgeManager::flag_map(std::map<begin_type, end_t
     for (target_map_iterator;target_map_iterator != target_map.end();++target_map_iterator) {
         RCLCPP_INFO(
             rcl_node_ptr_->get_logger(),
-            "rcl current [%ss] map\n\ttopic : [%s]\n\ttype : [%s]",
+            "RCL current [%ss] map\n\ttopic : [%s]\n\ttype : [%s]",
             target_flag,
             target_map_iterator->first.c_str(),
             target_map_iterator->second.c_str()
@@ -307,7 +321,7 @@ void ros2_mqtt_bridge::RCLMQTTBridgeManager::bridge_rcl_to_mqtt() {
             if (rcl_publisher_count) {
                 RCLCPP_INFO(
                     rcl_node_ptr_->get_logger(),
-                    "rcl found [%s]\n\ttopic : [%s]\n\ttype : [%s]",
+                    "RCL found [%s]\n\ttopic : [%s]\n\ttype : [%s]",
                     RCL_PUBLISHER_FLAG,
                     rcl_topic_name.c_str(),
                     rcl_topic_type.c_str()
@@ -315,7 +329,7 @@ void ros2_mqtt_bridge::RCLMQTTBridgeManager::bridge_rcl_to_mqtt() {
                 RCLCPP_LINE_INFO();
                 rcl_current_publishers_map[rcl_topic_name] = rcl_topic_type;
             } else {
-                RCLCPP_ERROR(rcl_node_ptr_->get_logger(), "rcl [%s]s is empty...", RCL_PUBLISHER_FLAG);
+                RCLCPP_ERROR(rcl_node_ptr_->get_logger(), "RCL [%s]s is empty...", RCL_PUBLISHER_FLAG);
                 RCLCPP_LINE_ERROR();
             }
 
@@ -324,7 +338,7 @@ void ros2_mqtt_bridge::RCLMQTTBridgeManager::bridge_rcl_to_mqtt() {
             if (rcl_subscription_count) {
                 RCLCPP_INFO(
                     rcl_node_ptr_->get_logger(),
-                    "rcl found [%s]\n\ttopic : [%s]\n\ttype : [%s]",
+                    "RCL found [%s]\n\ttopic : [%s]\n\ttype : [%s]",
                     RCL_SUBSCRIPTION_FLAG,
                     rcl_topic_name.c_str(),
                     rcl_topic_type.c_str()
@@ -332,7 +346,7 @@ void ros2_mqtt_bridge::RCLMQTTBridgeManager::bridge_rcl_to_mqtt() {
                 RCLCPP_LINE_INFO();
                 rcl_current_subscriptions_map[rcl_topic_name] = rcl_topic_type;
             } else {
-                RCLCPP_ERROR(rcl_node_ptr_->get_logger(), "rcl [%s]s is empty...", RCL_SUBSCRIPTION_FLAG);
+                RCLCPP_ERROR(rcl_node_ptr_->get_logger(), "RCL [%s]s is empty...", RCL_SUBSCRIPTION_FLAG);
                 RCLCPP_LINE_ERROR();
             }
 
@@ -341,7 +355,7 @@ void ros2_mqtt_bridge::RCLMQTTBridgeManager::bridge_rcl_to_mqtt() {
 
             RCLCPP_INFO(
                 rcl_node_ptr_->get_logger(),
-                "rcl current status \n\ttopic : [%s]\n\ttypes : [%s]\n\tcount : [%zu publishers, %zu subscriptions]",
+                "RCL current status \n\ttopic : [%s]\n\ttypes : [%s]\n\tcount : [%zu publishers, %zu subscriptions]",
                 rcl_topic_name.c_str(), 
                 rcl_topic_type.c_str(),
                 rcl_publisher_count,
@@ -354,7 +368,7 @@ void ros2_mqtt_bridge::RCLMQTTBridgeManager::bridge_rcl_to_mqtt() {
                     using rcl_message_type_t = std_msgs::msg::String;
 
                     std::function<void(std::shared_ptr<rcl_message_type_t>)> rcl_chatter_callback = [this, rcl_topic_name](const std_msgs::msg::String::SharedPtr rcl_chatter_callback_data_ptr) {
-                        RCLCPP_INFO(rcl_node_ptr_->get_logger(), "rcl [%s] subscription callback : [%s]", rcl_topic_name.c_str(), rcl_chatter_callback_data_ptr->data.c_str());
+                        RCLCPP_INFO(rcl_node_ptr_->get_logger(), "RCL [%s] subscription callback : [%s]", rcl_topic_name.c_str(), rcl_chatter_callback_data_ptr->data.c_str());
                         RCLCPP_LINE_INFO();
                         this->mqtt_publish(rcl_topic_name.c_str(), rcl_chatter_callback_data_ptr->data.c_str());
                     };
@@ -366,7 +380,7 @@ void ros2_mqtt_bridge::RCLMQTTBridgeManager::bridge_rcl_to_mqtt() {
                     using rcl_message_type_t = nav_msgs::msg::Odometry;
 
                     std::function<void(std::shared_ptr<rcl_message_type_t>)> rcl_odom_callback = [this, rcl_topic_name](const nav_msgs::msg::Odometry::SharedPtr rcl_odom_callback_data_ptr) {
-                        RCLCPP_INFO(rcl_node_ptr_->get_logger(), "rcl [%s] subscription callback : [%s]", rcl_topic_name.c_str(), rcl_odom_callback_data_ptr->child_frame_id);
+                        RCLCPP_INFO(rcl_node_ptr_->get_logger(), "RCL [%s] subscription callback : [%s]", rcl_topic_name.c_str(), rcl_odom_callback_data_ptr->child_frame_id);
                         RCLCPP_LINE_INFO();
                     };
                 } else if(rcl_topic_name == "/path") {
