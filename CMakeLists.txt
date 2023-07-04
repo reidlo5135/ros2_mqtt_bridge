@@ -34,6 +34,8 @@ find_library(PAHO_MQTT_CPP_LIB paho-mqttpp3 PATHS /usr/local/lib REQUIRED)
 
 add_executable(
   dynamic_bridge
+  include/ros2_mqtt_definer/define_container.hpp
+  include/ros2_mqtt_message_converter/message_converter.hpp
   src/ros2_mqtt_bridge/dynamic_bridge.cpp
   src/main.cpp
 )
