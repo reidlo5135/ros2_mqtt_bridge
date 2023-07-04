@@ -29,6 +29,7 @@ find_package(sensor_msgs REQUIRED)
 find_package(geometry_msgs REQUIRED)
 find_package(tf2_msgs REQUIRED)
 find_package(builtin_interfaces REQUIRED)
+find_package(jsoncpp REQUIRED)
 find_library(PAHO_MQTT_CPP_LIB paho-mqttpp3 PATHS /usr/local/lib REQUIRED)
 
 add_executable(
@@ -49,6 +50,7 @@ ament_target_dependencies(
 target_link_libraries(
   dynamic_bridge
   ${PAHO_MQTT_CPP_LIB} -lpaho-mqtt3as
+  jsoncpp
 )
 
 install(TARGETS
