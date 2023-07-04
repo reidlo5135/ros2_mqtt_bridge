@@ -244,7 +244,7 @@ namespace ros2_mqtt_bridge {
             rclcpp::Subscription<sensor_msgs::msg::Imu>::SharedPtr rcl_imu_data_subscription_ptr_;
 
             /**
-             * @brief mutex for bridge
+             * @brief mutex for bridge_rcl_to_mqtt
             */
             std::mutex rcl_lambda_mutex_;
 
@@ -303,10 +303,34 @@ namespace ros2_mqtt_bridge {
             void mqtt_subscribe(const char * mqtt_topic);
 
             /**
-             * @brief function for get current ROS2 topics and types
+             * @brief template function for log map
+             * @param target_map target std::map
+             * @param target_flag log target
              * @return void
             */
-            void bridge_rcl_with_mqtt_after_get_current_topics_and_types();
+            template<typename begin_type, typename end_type>
+            void flag_map(std::map<begin_type, end_type> target_map, const char * target_flag);
+
+            /**
+             * function for foundate MQTT to RCL by grant MQTT subscription with current RCL publishers
+             * @param rcl_current_subscriptions_map target RCL current publishers map
+             * @return void
+            */
+            void foundate_mqtt_to_rcl(std::map<std::string, std::string> rcl_current_subscriptions_map);
+
+            /**
+             * @brief function for bridge MQTT to RCL after delivered mqtt_subscription callback data
+             * @param mqtt_topic target MQTT topic
+             * @param mqtt_payload received MQTT payload
+             * @return void
+            */
+            void bridge_mqtt_to_rcl(const std::string & mqtt_topic, const std::string & mqtt_payload);
+
+            /**
+             * @brief function for bridge RCL to MQTT after get current topic and types
+             * @return void
+            */
+            void bridge_rcl_to_mqtt();
     };
 
     /**

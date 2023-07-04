@@ -22,8 +22,16 @@ ros2_mqtt_bridge::RCLMQTTBridgeManager::RCLMQTTBridgeManager(
 ) : rcl_node_ptr_(rcl_node_ptr),
 rcl_connection_manager_ptr_(rcl_connection_manager_ptr),
 mqtt_async_client_(MQTT_ADDRESS, MQTT_CLIENT_ID) {
+
+    /**
+     * invoke for establish MQTT connection
+    */
     this->mqtt_connect();
-    this->bridge_rcl_with_mqtt_after_get_current_topics_and_types();
+
+    /**
+     * invoke for bridge_rcl_to_mqtt rcl and mqtt
+    */
+    this->bridge_rcl_to_mqtt();
 }
 
 /**
@@ -40,8 +48,18 @@ ros2_mqtt_bridge::RCLMQTTBridgeManager::~RCLMQTTBridgeManager() {
 */
 void ros2_mqtt_bridge::RCLMQTTBridgeManager::mqtt_connect() {
     try {
+        /**
+         * build MQTT connection options
+         * - clean session : true
+        */
         mqtt::connect_options mqtt_connect_opts;
         mqtt_connect_opts.set_clean_session(true);
+
+        /**
+         * establish MQTT connection with mqtt_connect_opts and wait for 60 seconds
+         * - when succeeded to connect, set MQTT callback by this class
+         * - when failed to connect, retry to establish MQTT connection and wait for 30 seconds
+        */
         mqtt_async_client_.connect(mqtt_connect_opts)->wait_for(std::chrono::seconds(60));
         if(mqtt_async_client_.is_connected()) {
             RCUTILS_LOG_INFO_NAMED(RCL_NODE_NAME, "MQTT connection success");
@@ -63,6 +81,9 @@ void ros2_mqtt_bridge::RCLMQTTBridgeManager::mqtt_connect() {
 * @return void
 */
 void ros2_mqtt_bridge::RCLMQTTBridgeManager::connection_lost(const std::string & mqtt_connection_lost_cause) {
+    /**
+     * log cause when MQTT connection lost
+    */
     RCUTILS_LOG_ERROR_NAMED(RCL_NODE_NAME, "MQTT connection lost with cause [%s]", mqtt_connection_lost_cause.c_str());
     RCLCPP_LINE_ERROR();
 }
@@ -73,16 +94,13 @@ void ros2_mqtt_bridge::RCLMQTTBridgeManager::connection_lost(const std::string &
 * @return void
 */
 void ros2_mqtt_bridge::RCLMQTTBridgeManager::message_arrived(mqtt::const_message_ptr mqtt_message) {
+    /**
+     * initialize MQTT topic and payload when message arrived
+    */
     const std::string & mqtt_topic = mqtt_message->get_topic();
     const std::string & mqtt_payload = mqtt_message->to_string();
 
-    RCUTILS_LOG_INFO_NAMED(
-        RCL_NODE_NAME,
-        "MQTT message arrived \n\ttopic : [%s]\n\tpayload : [%s]",
-        mqtt_topic.c_str(),
-        mqtt_payload.c_str()
-    );
-    RCLCPP_LINE_INFO();
+    this->bridge_mqtt_to_rcl(mqtt_topic, mqtt_payload);
 }
 
 /**
@@ -103,10 +121,23 @@ void ros2_mqtt_bridge::RCLMQTTBridgeManager::delivery_complete(mqtt::delivery_to
 */
 void ros2_mqtt_bridge::RCLMQTTBridgeManager::mqtt_publish(const char * mqtt_topic, std::string mqtt_payload) {
     try {
+        /**
+         * build MQTT publish message
+         * - MQTT_DEFAULT_QOS : 0
+        */
 		mqtt::message_ptr mqtt_publish_message_ptr = mqtt::make_message(mqtt_topic, mqtt_payload);
 		mqtt_publish_message_ptr->set_qos(MQTT_DEFAULT_QOS);
+
+        /**
+         * return value of MQTT publishing result
+         * - blocks the current thread until the action this token is associated with has completed.
+        */
 		mqtt::delivery_token_ptr mqtt_delivery_token_ptr = mqtt_async_client_.publish(mqtt_publish_message_ptr);
         mqtt_delivery_token_ptr->wait();
+
+        /**
+         * log error when MQTT publishing has not succeeded
+        */
         if (mqtt_delivery_token_ptr->get_return_code() != mqtt::SUCCESS) {
             RCUTILS_LOG_ERROR_NAMED(RCL_NODE_NAME, "MQTT publishing error with code [%d]", mqtt_delivery_token_ptr->get_return_code());
             RCLCPP_LINE_ERROR();
@@ -125,6 +156,11 @@ void ros2_mqtt_bridge::RCLMQTTBridgeManager::mqtt_publish(const char * mqtt_topi
 void ros2_mqtt_bridge::RCLMQTTBridgeManager::mqtt_subscribe(const char * mqtt_topic) {
     try {
         printf("\n");
+        /**
+         * grant MQTT subscription
+         * - mqtt_topic : target MQTT publisher topic
+         * - MQTT_DEFAULT_QOS : 0
+        */
         RCUTILS_LOG_INFO_NAMED(RCL_NODE_NAME, "MQTT grant subscription with [%s]", mqtt_topic);
         RCLCPP_LINE_INFO();
 		mqtt_async_client_.subscribe(mqtt_topic, MQTT_DEFAULT_QOS);
@@ -134,43 +170,120 @@ void ros2_mqtt_bridge::RCLMQTTBridgeManager::mqtt_subscribe(const char * mqtt_to
 	}
 }
 
-void ros2_mqtt_bridge::RCLMQTTBridgeManager::bridge_rcl_with_mqtt_after_get_current_topics_and_types() {
-    std::map<std::string, std::string> rcl_publishers;
-    std::map<std::string, std::string> rcl_subscriptions;
-    std::map<std::string, std::map<std::string, std::string>> rcl_services;
+/**
+* @brief template function for log map
+* @param target_map target std::map
+* @param target_flag log target
+* @return void
+*/
+template<typename begin_type, typename end_type>
+void ros2_mqtt_bridge::RCLMQTTBridgeManager::flag_map(std::map<begin_type, end_type> target_map, const char * target_flag) {
+    typename std::map<begin_type, end_type>::iterator target_map_iterator = target_map.begin();
 
-    std::set<std::string> rcl_already_ignored_topics;
-    std::set<std::string> rcl_already_ignored_services;
+    for (target_map_iterator;target_map_iterator != target_map.end();++target_map_iterator) {
+        RCLCPP_INFO(
+            rcl_node_ptr_->get_logger(),
+            "rcl current [%ss] map\n\ttopic : [%s]\n\ttype : [%s]",
+            target_flag,
+            target_map_iterator->first.c_str(),
+            target_map_iterator->second.c_str()
+        );
+        RCLCPP_LINE_INFO();
+    }
+}
 
+/**
+* function for foundate MQTT to RCL by grant MQTT subscription with current RCL publishers
+* @param rcl_current_publishers_map target RCL current publishers map
+* @return void
+*/
+void ros2_mqtt_bridge::RCLMQTTBridgeManager::foundate_mqtt_to_rcl(std::map<std::string, std::string> rcl_current_subscriptions_map) {
+    std::map<std::string, std::string>::iterator rcl_current_subscriptions_map_iterator = rcl_current_subscriptions_map.begin();
+
+    for (rcl_current_subscriptions_map_iterator;rcl_current_subscriptions_map_iterator != rcl_current_subscriptions_map.end();++rcl_current_subscriptions_map_iterator) {
+        const char * mqtt_subscription_topic = rcl_current_subscriptions_map_iterator->first.c_str();
+        this->mqtt_subscribe(mqtt_subscription_topic);
+
+        RCLCPP_INFO(
+            rcl_node_ptr_->get_logger(),
+            "foundate MQTT to RCL topic : [%s]",
+            mqtt_subscription_topic
+        );
+        RCLCPP_LINE_INFO();
+    }
+}
+
+/**
+* @brief function for bridge MQTT to RCL after delivered mqtt_subscription callback data
+* @param mqtt_topic target MQTT topic
+* @param mqtt_payload received MQTT payload
+* @return void
+*/
+void ros2_mqtt_bridge::RCLMQTTBridgeManager::bridge_mqtt_to_rcl(const std::string & mqtt_topic, const std::string & mqtt_payload) {
+    RCLCPP_INFO(
+        rcl_node_ptr_->get_logger(),
+        "MQTT to RCL message arrived \n\ttopic : [%s]\n\tpayload : [%s]",
+        mqtt_topic.c_str(),
+        mqtt_payload.c_str()
+    );
+    RCLCPP_LINE_INFO();
+}
+
+/**
+* @brief function for bridge_rcl_to_mqtt rcl and mqtt after get current topic and types
+* @return void
+*/
+void ros2_mqtt_bridge::RCLMQTTBridgeManager::bridge_rcl_to_mqtt() {
+    /**
+     * maps for save rcl connections
+     * - rcl_publishers_map : for rcl publishers
+     * - rcl_subscriptions_map : for rcl subscriptions
+     * - rcl_service_map : for rcl services
+    */
+    std::map<std::string, std::string> rcl_publishers_map;
+    std::map<std::string, std::string> rcl_subscriptions_map;
+    std::map<std::string, std::map<std::string, std::string>> rcl_services_map;
+
+    /**
+     * sets for save already ignored rcl topics
+     * - rcl_already_ignored_topics_set : for topics(publishers, subscriptions)
+     * - rcl_already_ignored_services_set : for services
+    */
+    std::set<std::string> rcl_already_ignored_topics_set;
+    std::set<std::string> rcl_already_ignored_services_set;
+
+    /**
+     * lamba function for bridge rcl to mqtt rcl to mqtt get current rcl topics and types
+    */
     std::function<void()> rcl_bridge_lambda = [
         this,
-        &rcl_publishers,
-        &rcl_subscriptions,
-        &rcl_services,
-        &rcl_already_ignored_topics,
-        &rcl_already_ignored_services
+        &rcl_publishers_map,
+        &rcl_subscriptions_map,
+        &rcl_services_map,
+        &rcl_already_ignored_topics_set,
+        &rcl_already_ignored_services_set
     ]() -> void {
-        std::map<std::string, std::vector<std::string, std::allocator<std::string>>> rcl_topics = rcl_node_ptr_->get_topic_names_and_types();
+        std::map<std::string, std::vector<std::string, std::allocator<std::string>>> rcl_topics_and_types_map = rcl_node_ptr_->get_topic_names_and_types();
 
-        std::set<std::string> rcl_ignored_topics;
-        rcl_ignored_topics.insert(RCL_PARAMETER_EVENTS_TOPIC);
-        rcl_ignored_topics.insert(RCL_ROSOUT_TOPIC);
+        std::set<std::string> rcl_ignored_topics_set;
+        rcl_ignored_topics_set.insert(RCL_PARAMETER_EVENTS_TOPIC);
+        rcl_ignored_topics_set.insert(RCL_ROSOUT_TOPIC);
 
-        std::map<std::string, std::string> rcl_current_publishers;
-        std::map<std::string, std::string> rcl_current_subscriptions;
+        std::map<std::string, std::string> rcl_current_publishers_map;
+        std::map<std::string, std::string> rcl_current_subscriptions_map;
 
-        for(std::pair<const std::string, std::vector<std::string, std::allocator<std::string>>> rcl_topic_and_types : rcl_topics) {
-            if (rcl_ignored_topics.find(rcl_topic_and_types.first) != rcl_ignored_topics.end()) {
+        for(std::pair<const std::string, std::vector<std::string, std::allocator<std::string>>> rcl_topic_and_types_pair : rcl_topics_and_types_map) {
+            if (rcl_ignored_topics_set.find(rcl_topic_and_types_pair.first) != rcl_ignored_topics_set.end()) {
                 continue;
             }
 
-            const std::string & rcl_topic_name = rcl_topic_and_types.first;
-            std::string & rcl_topic_type = rcl_topic_and_types.second[0];
+            const std::string & rcl_topic_name = rcl_topic_and_types_pair.first;
+            std::string & rcl_topic_type = rcl_topic_and_types_pair.second[0];
 
-            if (rcl_topic_and_types.second.size() > 1) {
-                if (rcl_already_ignored_topics.count(rcl_topic_name) == 0) {
+            if (rcl_topic_and_types_pair.second.size() > 1) {
+                if (rcl_already_ignored_topics_set.count(rcl_topic_name) == 0) {
                     std::string types = "";
-                    for (std::string type : rcl_topic_and_types.second) {
+                    for (std::string type : rcl_topic_and_types_pair.second) {
                         types += type + ", ";
                     }
 
@@ -182,7 +295,7 @@ void ros2_mqtt_bridge::RCLMQTTBridgeManager::bridge_rcl_with_mqtt_after_get_curr
                     );
                     RCLCPP_LINE_WARN();
 
-                    rcl_already_ignored_topics.insert(rcl_topic_name);
+                    rcl_already_ignored_topics_set.insert(rcl_topic_name);
                 }
 
                 continue;
@@ -200,22 +313,13 @@ void ros2_mqtt_bridge::RCLMQTTBridgeManager::bridge_rcl_with_mqtt_after_get_curr
                     rcl_topic_type.c_str()
                 );
                 RCLCPP_LINE_INFO();
-                rcl_current_publishers[rcl_topic_name] = rcl_topic_type;
+                rcl_current_publishers_map[rcl_topic_name] = rcl_topic_type;
             } else {
                 RCLCPP_ERROR(rcl_node_ptr_->get_logger(), "rcl [%s]s is empty...", RCL_PUBLISHER_FLAG);
                 RCLCPP_LINE_ERROR();
             }
 
-            for (std::map<std::string, std::string>::iterator it = rcl_current_publishers.begin();it != rcl_current_publishers.end();++it) {
-                RCLCPP_INFO(
-                    rcl_node_ptr_->get_logger(), 
-                    "rcl current [%ss] map\n\ttopic : [%s]\n\ttype : [%s]",
-                    RCL_PUBLISHER_FLAG,
-                    it->first.c_str(),
-                    it->second.c_str()
-                );
-                RCLCPP_LINE_INFO();
-            }
+            this->flag_map<std::string, std::string>(rcl_current_publishers_map, RCL_PUBLISHER_FLAG);
 
             if (rcl_subscription_count) {
                 RCLCPP_INFO(
@@ -226,22 +330,14 @@ void ros2_mqtt_bridge::RCLMQTTBridgeManager::bridge_rcl_with_mqtt_after_get_curr
                     rcl_topic_type.c_str()
                 );
                 RCLCPP_LINE_INFO();
-                rcl_current_subscriptions[rcl_topic_name] = rcl_topic_type;
+                rcl_current_subscriptions_map[rcl_topic_name] = rcl_topic_type;
             } else {
                 RCLCPP_ERROR(rcl_node_ptr_->get_logger(), "rcl [%s]s is empty...", RCL_SUBSCRIPTION_FLAG);
                 RCLCPP_LINE_ERROR();
             }
 
-            for (std::map<std::string, std::string>::iterator it = rcl_current_subscriptions.begin();it != rcl_current_subscriptions.end();++it) {
-                RCLCPP_INFO(
-                    rcl_node_ptr_->get_logger(), 
-                    "rcl current [%ss] map\n\ttopic : [%s]\n\ttype : [%s]",
-                    RCL_SUBSCRIPTION_FLAG,
-                    it->first.c_str(),
-                    it->second.c_str()
-                );
-                RCLCPP_LINE_INFO();
-            }
+            this->flag_map<std::string, std::string>(rcl_current_subscriptions_map, RCL_SUBSCRIPTION_FLAG);
+            this->foundate_mqtt_to_rcl(rcl_current_subscriptions_map);
 
             RCLCPP_INFO(
                 rcl_node_ptr_->get_logger(),
@@ -252,9 +348,6 @@ void ros2_mqtt_bridge::RCLMQTTBridgeManager::bridge_rcl_with_mqtt_after_get_curr
                 rcl_subscription_count
             );
             RCLCPP_LINE_INFO();
-
-            // const char * mqtt_subscription_topic = rcl_topic_name.c_str();
-            // this->mqtt_subscribe(mqtt_subscription_topic);
 
             if(rcl_topic_type.find(RCL_STD_MSGS_TYPE) != std::string::npos) {
                 if(rcl_topic_name == RCL_CHATTER_TOPIC) {
@@ -283,8 +376,8 @@ void ros2_mqtt_bridge::RCLMQTTBridgeManager::bridge_rcl_with_mqtt_after_get_curr
 
             {
                 std::lock_guard<std::mutex> lock(rcl_lambda_mutex_);
-                rcl_publishers = rcl_current_publishers;
-                rcl_subscriptions = rcl_current_subscriptions;
+                rcl_publishers_map = rcl_current_publishers_map;
+                rcl_subscriptions_map = rcl_current_subscriptions_map;
             }
         }
     };
