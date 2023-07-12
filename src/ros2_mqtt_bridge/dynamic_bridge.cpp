@@ -262,7 +262,7 @@ void ros2_mqtt_bridge::RCLMQTTBridgeManager::bridge_mqtt_to_rcl(const std::strin
         RCLCPP_INFO(rcl_node_ptr_->get_logger(), "bridge MQTT to RCL with\n\ttopic : [%s]\n\tpayload : [%s]", mqtt_topic.c_str(), mqtt_payload.c_str());
         RCLCPP_LINE_INFO();
         
-        std_msgs::msg::String::UniquePtr rcl_std_msgs_string_ptr = rcl_std_msgs_converter_ptr_->json_to_std_msgs_string(mqtt_payload);
+        std_msgs::msg::String::UniquePtr rcl_std_msgs_string_ptr = rcl_std_msgs_converter_ptr_->json_to_string(mqtt_payload);
         rcl_chatter_publisher_ptr_->publish(std::move(*rcl_std_msgs_string_ptr));
     }
 }
