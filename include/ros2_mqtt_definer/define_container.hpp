@@ -39,6 +39,7 @@
 #include <vector>
 #include <signal.h>
 #include <functional>
+#include <array>
 #include <jsoncpp/json/json.h>
 
 /**
@@ -153,10 +154,81 @@ static constexpr const char * RCL_IMU_DATA_TOPIC = "/imu/data";
 */
 static constexpr const char * RCL_SCAN_TOPIC = "/scan";
 
+static constexpr const char * RCL_JSON_STRING_DEFAULT = "nullstr";
+
+static constexpr const double & RCL_JSON_DOUBLE_DEFAULT = 0.0;
+
+static constexpr const char * RCL_JSON_HEADER = "header";
+
+static constexpr const char * RCL_JSON_STRING = "string";
+
+static constexpr const char * RCL_JSON_HEADER_FRAME_ID = "frame_id";
+
+static constexpr const char * RCL_JSON_HEADER_SEQ = "seq";
+
+static constexpr const char * RCL_JSON_HEADER_SEC = "sec";
+
+static constexpr const char * RCL_JSON_HEADER_NANOSEC = "nanosec";
+
+static constexpr const char * RCL_JSON_HEADER_STAMP = "stamp";
+
+static constexpr const char * RCL_JSON_STRING_DATA = "data";
+
+static constexpr const char * RCL_JSON_POINT = "point";
+
+static constexpr const char * RCL_JSON_POINT_X = "x";
+
+static constexpr const char * RCL_JSON_POINT_Y = "y";
+
+static constexpr const char * RCL_JSON_POINT_Z = "z";
+
+static constexpr const char * RCL_JSON_QUATERNION = "quaternion";
+
+static constexpr const char * RCL_JSON_QUATERNION_X = "x";
+
+static constexpr const char * RCL_JSON_QUATERNION_Y = "y";
+
+static constexpr const char * RCL_JSON_QUATERNION_Z = "z";
+
+static constexpr const char * RCL_JSON_QUATERNION_W = "w";
+
+static constexpr const char * RCL_JSON_POSE = "pose";
+
+static constexpr const char * RCL_JSON_POSITION = "position";
+
+static constexpr const char * RCL_JSON_ORIENTATION = "orientation";
+
+static constexpr const char * RCL_JSON_VECTOR3 = "vector3";
+
+static constexpr const char * RCL_JSON_VECTOR3_X = "x";
+
+static constexpr const char * RCL_JSON_VECTOR3_Y = "y";
+
+static constexpr const char * RCL_JSON_VECTOR3_Z = "z";
+
+static constexpr const char * RCL_JSON_TWIST = "twist";
+
+static constexpr const char * RCL_JSON_LINEAR = "linear";
+
+static constexpr const char * RCL_JSON_ANGULAR = "angular";
+
+static constexpr const char * RCL_JSON_POSE_COVARIANCE = "covariance";
+
+static constexpr const int & RCL_JSON_POSE_COVARIANCE_SIZE_DEFAULT = 36;
+
+static constexpr const char * RCL_JSON_POSE_STAMPED = "pose_stamped";
+
+static constexpr const char * RCL_JSON_POSE_WITH_COVARIANCE = "pose_with_covariance";
+
 /**
  * @brief static const instance for define message type of std_msgs::msg
 */
 static constexpr const char * RCL_STD_MSGS_TYPE = "std_msgs/msg/";
+
+/**
+ * @brief static const instance for define message type of geometry_msgs::msg
+*/
+static constexpr const char * RCL_GEOMETRY_MSGS_TYPE = "geometry_msgs/msg/";
 
 /**
  * @brief static const instance for define message type of nav_msgs::msg
@@ -172,11 +244,6 @@ static constexpr const char * RCL_NAV2_MSGS_TYPE = "nav2_msgs/msg/";
  * @brief static const instance for define message type of sensor_msgs::msg
 */
 static constexpr const char * RCL_SENSOR_MSGS_TYPE = "sensor_msgs/msg/";
-
-/**
- * @brief static const instance for define message type of geometry_msgs::msg
-*/
-static constexpr const char * RCL_GEOMETRY_MSGS_TYPE = "geometry_msgs/msg/";
 
 /**
  * @brief static const instance for define address of MQTT
