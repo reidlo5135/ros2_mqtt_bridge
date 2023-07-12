@@ -158,9 +158,9 @@ static constexpr const char * RCL_JSON_STRING_DEFAULT = "nullstr";
 
 static constexpr const double & RCL_JSON_DOUBLE_DEFAULT = 0.0;
 
-static constexpr const char * RCL_JSON_HEADER = "header";
+static constexpr const char * RCL_JSON_HEADER = "Header";
 
-static constexpr const char * RCL_JSON_STRING = "string";
+static constexpr const char * RCL_JSON_STRING = "String";
 
 static constexpr const char * RCL_JSON_HEADER_FRAME_ID = "frame_id";
 
@@ -219,6 +219,8 @@ static constexpr const int & RCL_JSON_POSE_COVARIANCE_SIZE_DEFAULT = 36;
 static constexpr const char * RCL_JSON_POSE_STAMPED = "pose_stamped";
 
 static constexpr const char * RCL_JSON_POSE_WITH_COVARIANCE = "pose_with_covariance";
+
+static constexpr const char * RCL_JSON_POSE_WITH_COVARIANCE_STAMPED = "pose_with_covariance_stamped";
 
 /**
  * @brief static const instance for define message type of std_msgs::msg

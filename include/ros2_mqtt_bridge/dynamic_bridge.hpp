@@ -35,6 +35,7 @@ namespace ros2_mqtt_bridge {
     class RCLConnectionManager;
     
     /**
+     * @class RCLMQTTBridgeManager
      * @brief final class for implements mqtt::callback what defines MQTT connections
     */
     class RCLMQTTBridgeManager final : public virtual mqtt::callback {
