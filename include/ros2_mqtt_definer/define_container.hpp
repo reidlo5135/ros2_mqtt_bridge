@@ -158,9 +158,15 @@ static constexpr const char * RCL_JSON_STRING_DEFAULT = "nullstr";
 
 static constexpr const double & RCL_JSON_DOUBLE_DEFAULT = 0.0;
 
+static constexpr const float & RCL_JSON_FLOAT_DEFAULT = 0.0f;
+
 static constexpr const char * RCL_JSON_HEADER = "Header";
 
+static constexpr const char * RCL_JSON_HEADER_KEY = "header";
+
 static constexpr const char * RCL_JSON_STRING = "String";
+
+static constexpr const char * RCL_JSON_STRING_KEY = "string";
 
 static constexpr const char * RCL_JSON_HEADER_FRAME_ID = "frame_id";
 
@@ -222,6 +228,142 @@ static constexpr const char * RCL_JSON_POSE_WITH_COVARIANCE = "pose_with_covaria
 
 static constexpr const char * RCL_JSON_POSE_WITH_COVARIANCE_STAMPED = "pose_with_covariance_stamped";
 
+static constexpr const char * RCL_JSON_LASER_SCAN = "LaserScan";
+
+static constexpr const char * RCL_JSON_LASER_SCAN_ANGLE_MIN = "angle_min";
+
+static constexpr const char * RCL_JSON_LASER_SCAN_ANGLE_MAX = "angle_max";
+
+static constexpr const char * RCL_JSON_LASER_SCAN_ANGLE_INCREMENT = "angle_increment";
+
+static constexpr const char * RCL_JSON_LASER_SCAN_TIME_INCREMENT = "time_increment";
+
+static constexpr const char * RCL_JSON_LASER_SCAN_SCAN_TIME = "scan_time";
+
+static constexpr const char * RCL_JSON_LASER_SCAN_RANGE_MIN = "range_min";
+
+static constexpr const char * RCL_JSON_LASER_SCAN_RANGE_MAX = "range_max";
+
+static constexpr const char * RCL_JSON_LASER_SCAN_RANGES = "ranges";
+
+static constexpr const char * RCL_JSON_LASER_SCAN_INTENSITIES = "intensities";
+
+static constexpr const char * RCL_JSON_NAV_SAT_STATUS = "NavSatStatus";
+
+static constexpr const char * RCL_JSON_NAV_SAT_STATUS_STATUS_NO_FIX = "STATUS_NO_FIX";
+
+static constexpr const char * RCL_JSON_NAV_SAT_STATUS_STATUS_FIX = "STATUS_FIX";
+
+static constexpr const char * RCL_JSON_NAV_SAT_STATUS_STATUS_SBAS_FIX = "STATUS_SBAS_FIX";
+
+static constexpr const char * RCL_JSON_NAV_SAT_STATUS_STATUS_GBAS_FIX = "STATUS_GBAS_FIX";
+
+static constexpr const char * RCL_JSON_NAV_SAT_STATUS_STATUS = "status";
+
+static constexpr const char * RCL_JSON_NAV_SAT_STATUS_SERVICE_GPS = "SERVICE_GPS";
+
+static constexpr const char * RCL_JSON_NAV_SAT_STATUS_SERVICE_GLONASS = "SERVICE_GLONASS";
+
+static constexpr const char * RCL_JSON_NAV_SAT_STATUS_SERVICE_COMPASS = "SERVICE_COMPASS";
+
+static constexpr const char * RCL_JSON_NAV_SAT_STATUS_SERVICE_GALILEO = "SERVICE_GALILEO";
+
+static constexpr const char * RCL_JSON_NAV_SAT_STATUS_SERVICE = "service";
+
+static constexpr const char * RCL_JSON_NAV_SAT_FIX = "NavSatFix";
+
+static constexpr const char * RCL_JSON_NAV_SAT_FIX_STATUS = "status";
+
+static constexpr const char * RCL_JSON_NAV_SAT_FIX_LATITUDE = "latitude";
+
+static constexpr const char * RCL_JSON_NAV_SAT_FIX_ALTITUDE = "altitude";
+
+static constexpr const char * RCL_JSON_NAV_SAT_FIX_POSITION_COVARIANCE = "position_covariance";
+
+static constexpr const char * RCL_JSON_NAV_SAT_FIX_COVARIANCE_TYPE_UNKNOWN = "COVARIANCE_TYPE_UNKNOWN";
+
+static constexpr const char * RCL_JSON_NAV_SAT_FIX_COVARIANCE_TYPE_APPROXIMATED = "COVARIANCE_TYPE_APPROXIMATED";
+
+static constexpr const char * RCL_JSON_NAV_SAT_FIX_COVARIANCE_TYPE_DIAGONAL_KNOWN = "COVARIANCE_TYPE_DIAGONAL_KNOWN";
+
+static constexpr const char * RCL_JSON_NAV_SAT_FIX_COVARIANCE_TYPE_KNOWN = "COVARIANCE_TYPE_KNOWN";
+
+static constexpr const char * RCL_JSON_NAV_SAT_FIX_POSITION_COVARIANCE_TYPE = "position_covariance_type";
+
+static constexpr const char * RCL_JSON_BATTERY_STATE = "BatteryState";
+
+static constexpr const char * RCL_JSON_BATTERY_STATE_POWER_SUPPLY_STATUS_UNKNOWN = "POWER_SUPPLY_STATUS_UNKNOWN";
+
+static constexpr const char * RCL_JSON_BATTERY_STATE_POWER_SUPPLY_STATUS_CHARGING = "POWER_SUPPLY_STATUS_CHARGING";
+
+static constexpr const char * RCL_JSON_BATTERY_STATE_POWER_SUPPLY_STATUS_DISCHARGING = "POWER_SUPPLY_STATUS_DISCHARGING";
+
+static constexpr const char * RCL_JSON_BATTERY_STATE_POWER_SUPPLY_STATUS_NOT_CHARGING = "POWER_SUPPLY_STATUS_NOT_CHARGING";
+
+static constexpr const char * RCL_JSON_BATTERY_STATE_POWER_SUPPLY_STATUS_FULL = "POWER_SUPPLY_STATUS_FULL";
+
+static constexpr const char * RCL_JSON_BATTERY_STATE_POWER_SUPPLY_HEALTH_UNKNOWN = "POWER_SUPPLY_HEALTH_UNKNOWN";
+
+static constexpr const char * RCL_JSON_BATTERY_STATE_POWER_SUPPLY_HEALTH_GOOD = "POWER_SUPPLY_HEALTH_GOOD";
+
+static constexpr const char * RCL_JSON_BATTERY_STATE_POWER_SUPPLY_HEALTH_OVERHEAT = "POWER_SUPPLY_HEALTH_OVERHEAT";
+
+static constexpr const char * RCL_JSON_BATTERY_STATE_POWER_SUPPLY_HEALTH_DEAD = "POWER_SUPPLY_HEALTH_DEAD";
+
+static constexpr const char * RCL_JSON_BATTERY_STATE_POWER_SUPPLY_HEALTH_OVERVOLTAGE = "POWER_SUPPLY_HEALTH_OVERVOLTAGE";
+
+static constexpr const char * RCL_JSON_BATTERY_STATE_POWER_SUPPLY_HEALTH_UNSPEC_FAILURE = "POWER_SUPPLY_HEALTH_UNSPEC_FAILURE";
+
+static constexpr const char * RCL_JSON_BATTERY_STATE_POWER_SUPPLY_HEALTH_COLD = "POWER_SUPPLY_HEALTH_COLD";
+
+static constexpr const char * RCL_JSON_BATTERY_STATE_POWER_SUPPLY_HEALTH_WATCHDOG_TIMER_EXPIRE = "POWER_SUPPLY_HEALTH_WATCHDOG_TIMER_EXPIRE";
+
+static constexpr const char * RCL_JSON_BATTERY_STATE_POWER_SUPPLY_HEALTH_SAFETY_TIMER_EXPIRE = "POWER_SUPPLY_HEALTH_SAFETY_TIMER_EXPIRE";
+
+static constexpr const char * RCL_JSON_BATTERY_STATE_POWER_SUPPLY_TECHNOLOGY_UNKNOWN = "POWER_SUPPLY_TECHNOLOGY_UNKNOWN";
+
+static constexpr const char * RCL_JSON_BATTERY_STATE_POWER_SUPPLY_TECHNOLOGY_NIMH = "POWER_SUPPLY_TECHNOLOGY_NIMH";
+
+static constexpr const char * RCL_JSON_BATTERY_STATE_POWER_SUPPLY_TECHNOLOGY_LION = "POWER_SUPPLY_TECHNOLOGY_LION";
+
+static constexpr const char * RCL_JSON_BATTERY_STATE_POWER_SUPPLY_TECHNOLOGY_LIPO = "POWER_SUPPLY_TECHNOLOGY_LIPO";
+
+static constexpr const char * RCL_JSON_BATTERY_STATE_POWER_SUPPLY_TECHNOLOGY_LIFE = "POWER_SUPPLY_TECHNOLOGY_LIFE";
+
+static constexpr const char * RCL_JSON_BATTERY_STATE_POWER_SUPPLY_TECHNOLOGY_NICD = "POWER_SUPPLY_TECHNOLOGY_NICD";
+
+static constexpr const char * RCL_JSON_BATTERY_STATE_POWER_SUPPLY_TECHNOLOGY_LIMN = "POWER_SUPPLY_TECHNOLOGY_LIMN";
+
+static constexpr const char * RCL_JSON_BATTERY_STATE_VOLTAGE = "voltage";
+
+static constexpr const char * RCL_JSON_BATTERY_STATE_TEMPERATURE = "temperature";
+
+static constexpr const char * RCL_JSON_BATTERY_STATE_CURRENT = "current";
+
+static constexpr const char * RCL_JSON_BATTERY_STATE_CHARGE = "charge";
+
+static constexpr const char * RCL_JSON_BATTERY_STATE_CAPACITY = "capacity";
+
+static constexpr const char * RCL_JSON_BATTERY_STATE_DESIGN_CAPACITY = "design_capacity";
+
+static constexpr const char * RCL_JSON_BATTERY_STATE_PERCENTAGE = "percentage";
+
+static constexpr const char * RCL_JSON_BATTERY_STATE_POWER_SUPPLY_STATUS = "power_supply_status";
+
+static constexpr const char * RCL_JSON_BATTERY_STATE_POWER_SUPPLY_HEALTH = "power_supply_health";
+
+static constexpr const char * RCL_JSON_BATTERY_STATE_POWER_SUPPLY_TECHNOLOGY = "power_supply_technology";
+
+static constexpr const char * RCL_JSON_BATTERY_STATE_PRESENT = "present";
+
+static constexpr const char * RCL_JSON_BATTERY_STATE_CELL_VOLTAGE = "cell_voltage";
+
+static constexpr const char * RCL_JSON_BATTERY_STATE_CELL_TEMPERATURE = "cell_temperature";
+
+static constexpr const char * RCL_JSON_BATTERY_STATE_LOCATION = "location";
+
+static constexpr const char * RCL_JSON_BATTERY_STATE_SERIAL_NUMBER = "serial_number";
+
 /**
  * @brief static const instance for define message type of std_msgs::msg
 */
@@ -233,6 +375,11 @@ static constexpr const char * RCL_STD_MSGS_TYPE = "std_msgs/msg/";
 static constexpr const char * RCL_GEOMETRY_MSGS_TYPE = "geometry_msgs/msg/";
 
 /**
+ * @brief static const instance for define message type of sensor_msgs::msg
+*/
+static constexpr const char * RCL_SENSOR_MSGS_TYPE = "sensor_msgs/msg/";
+
+/**
  * @brief static const instance for define message type of nav_msgs::msg
 */
 static constexpr const char * RCL_NAV_MSGS_TYPE = "nav_msgs/msg/";
@@ -241,11 +388,6 @@ static constexpr const char * RCL_NAV_MSGS_TYPE = "nav_msgs/msg/";
  * @brief static const instance for define message type of nav2_msgs::msg
 */
 static constexpr const char * RCL_NAV2_MSGS_TYPE = "nav2_msgs/msg/";
-
-/**
- * @brief static const instance for define message type of sensor_msgs::msg
-*/
-static constexpr const char * RCL_SENSOR_MSGS_TYPE = "sensor_msgs/msg/";
 
 /**
  * @brief static const instance for define address of MQTT
