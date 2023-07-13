@@ -160,11 +160,13 @@ static constexpr const double & RCL_JSON_DOUBLE_DEFAULT = 0.0;
 
 static constexpr const float & RCL_JSON_FLOAT_DEFAULT = 0.0f;
 
-static constexpr const char * RCL_JSON_HEADER = "Header";
+static constexpr const char * RCL_JSON_CHILD_FRAME_ID = "child_frame_id";
+
+static constexpr const char * RCL_JSON_HEADER_FLAG = "Header";
 
 static constexpr const char * RCL_JSON_HEADER_KEY = "header";
 
-static constexpr const char * RCL_JSON_STRING = "String";
+static constexpr const char * RCL_JSON_STRING_FLAG = "String";
 
 static constexpr const char * RCL_JSON_STRING_KEY = "string";
 
@@ -214,11 +216,13 @@ static constexpr const char * RCL_JSON_VECTOR3_Z = "z";
 
 static constexpr const char * RCL_JSON_TWIST = "twist";
 
-static constexpr const char * RCL_JSON_LINEAR = "linear";
+static constexpr const char * RCL_JSON_TWIST_LINEAR = "linear";
 
-static constexpr const char * RCL_JSON_ANGULAR = "angular";
+static constexpr const char * RCL_JSON_TWIST_ANGULAR = "angular";
 
-static constexpr const char * RCL_JSON_POSE_COVARIANCE = "covariance";
+static constexpr const char * RCL_JSON_TWIST_WITH_COVARIANCE_FLAG = "TwistWithCovariance";
+
+static constexpr const char * RCL_JSON_COVARIANCE = "covariance";
 
 static constexpr const int & RCL_JSON_POSE_COVARIANCE_SIZE_DEFAULT = 36;
 
@@ -228,7 +232,7 @@ static constexpr const char * RCL_JSON_POSE_WITH_COVARIANCE = "pose_with_covaria
 
 static constexpr const char * RCL_JSON_POSE_WITH_COVARIANCE_STAMPED = "pose_with_covariance_stamped";
 
-static constexpr const char * RCL_JSON_LASER_SCAN = "LaserScan";
+static constexpr const char * RCL_JSON_LASER_SCAN_FLAG = "LaserScan";
 
 static constexpr const char * RCL_JSON_LASER_SCAN_ANGLE_MIN = "angle_min";
 
@@ -247,6 +251,18 @@ static constexpr const char * RCL_JSON_LASER_SCAN_RANGE_MAX = "range_max";
 static constexpr const char * RCL_JSON_LASER_SCAN_RANGES = "ranges";
 
 static constexpr const char * RCL_JSON_LASER_SCAN_INTENSITIES = "intensities";
+
+static constexpr const char * RCL_JSON_IMU_FLAG = "Imu";
+
+static constexpr const char * RCL_JSON_ANGULAR_VELOCITY = "angular_velocity";
+
+static constexpr const char * RCL_JSON_LINEAR_ACCELERATION = "linear_acceleration";
+
+static constexpr const char * RCL_JSON_ORIENTATION_COVARIANCE = "orientation_covariance";
+
+static constexpr const char * RCL_JSON_ANGULAR_VELOCITY_COVARIANCE = "angular_velocity_covariance";
+
+static constexpr const char * RCL_JSON_LINEAR_ACCELERATION_COVARIANCE = "linear_acceleration_covariance";
 
 static constexpr const char * RCL_JSON_NAV_SAT_STATUS = "NavSatStatus";
 
@@ -270,7 +286,7 @@ static constexpr const char * RCL_JSON_NAV_SAT_STATUS_SERVICE_GALILEO = "SERVICE
 
 static constexpr const char * RCL_JSON_NAV_SAT_STATUS_SERVICE = "service";
 
-static constexpr const char * RCL_JSON_NAV_SAT_FIX = "NavSatFix";
+static constexpr const char * RCL_JSON_NAV_SAT_FIX_FLAG = "NavSatFix";
 
 static constexpr const char * RCL_JSON_NAV_SAT_FIX_STATUS = "status";
 
@@ -290,7 +306,7 @@ static constexpr const char * RCL_JSON_NAV_SAT_FIX_COVARIANCE_TYPE_KNOWN = "COVA
 
 static constexpr const char * RCL_JSON_NAV_SAT_FIX_POSITION_COVARIANCE_TYPE = "position_covariance_type";
 
-static constexpr const char * RCL_JSON_BATTERY_STATE = "BatteryState";
+static constexpr const char * RCL_JSON_BATTERY_STATE_FLAG = "BatteryState";
 
 static constexpr const char * RCL_JSON_BATTERY_STATE_POWER_SUPPLY_STATUS_UNKNOWN = "POWER_SUPPLY_STATUS_UNKNOWN";
 
@@ -363,6 +379,8 @@ static constexpr const char * RCL_JSON_BATTERY_STATE_CELL_TEMPERATURE = "cell_te
 static constexpr const char * RCL_JSON_BATTERY_STATE_LOCATION = "location";
 
 static constexpr const char * RCL_JSON_BATTERY_STATE_SERIAL_NUMBER = "serial_number";
+
+static constexpr const char * RCL_JSON_ODOMETRY_FLAG = "Odometry";
 
 /**
  * @brief static const instance for define message type of std_msgs::msg

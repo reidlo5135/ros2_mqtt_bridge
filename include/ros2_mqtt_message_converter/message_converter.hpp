@@ -28,7 +28,7 @@ namespace ros2_mqtt_bridge {
 
     /**
      * @class StdMessageConverter
-     * @brief final class for implements converting functions between std_msgs::msg - Json::Value
+     * @brief final class for implements converting functions between std_msgs - Json::Value
     */
     class StdMessageConverter final {
         public :
@@ -58,14 +58,14 @@ namespace ros2_mqtt_bridge {
 
                 try {
                     header_json[RCL_JSON_HEADER_FRAME_ID] = rcl_header.frame_id;
-                    header_json[RCL_JSON_HEADER_SEQ] = rcl_header.stamp.sec;
-                    header_json[RCL_JSON_HEADER_STAMP] = rcl_header.stamp.sec + rcl_header.stamp.nanosec * 1e-9;
+                    header_json[RCL_JSON_HEADER_STAMP][RCL_JSON_HEADER_SEC] = rcl_header.stamp.sec;
+                    header_json[RCL_JSON_HEADER_STAMP][RCL_JSON_HEADER_NANOSEC] = rcl_header.stamp.nanosec;
                 } catch(const Json::Exception & json_expn) {
                     RCUTILS_LOG_ERROR_NAMED(
                         RCL_NODE_NAME,
                         "error occurred during convert [%s%s] to json\n\twith : [%s]", 
                         RCL_STD_MSGS_TYPE, 
-                        RCL_JSON_HEADER, 
+                        RCL_JSON_HEADER_FLAG, 
                         json_expn.what()
                     );
                     RCLCPP_LINE_ERROR();
@@ -73,6 +73,40 @@ namespace ros2_mqtt_bridge {
 
                 return header_json;
             };
+
+            /**
+             * @brief inline function for convert Json::Value into std_msgs::msg::Header::UniquePtr
+             * @param raw_header_json target Json::Value
+             * @return rcl_std_msgs_header_ptr std_msgs::msg::Header::UniquePtr
+            */
+            inline std_msgs::msg::Header::UniquePtr json_to_header(const Json::Value & raw_header_json) {
+                std_msgs::msg::Header::UniquePtr rcl_std_msgs_header_ptr = std::make_unique<std_msgs::msg::Header>();
+                builtin_interfaces::msg::Time::UniquePtr rcl_builtin_interfaces_time_ptr = std::make_unique<builtin_interfaces::msg::Time>();
+
+                try {
+                    const std::string & raw_header_json_frame_id = raw_header_json.get(RCL_JSON_HEADER_FRAME_ID, RCL_JSON_STRING_DEFAULT).asString();
+                    rcl_std_msgs_header_ptr->set__frame_id(raw_header_json_frame_id);
+
+                    const double & raw_header_json_sec = raw_header_json.get(RCL_JSON_HEADER_SEC, RCL_JSON_DOUBLE_DEFAULT).asDouble();
+                    rcl_builtin_interfaces_time_ptr->set__sec(raw_header_json_sec);
+
+                    const double & raw_header_json_nanosec = raw_header_json.get(RCL_JSON_HEADER_NANOSEC, RCL_JSON_DOUBLE_DEFAULT).asDouble();
+                    rcl_builtin_interfaces_time_ptr->set__nanosec(raw_header_json_nanosec);
+
+                    rcl_std_msgs_header_ptr->set__stamp(std::move(*rcl_builtin_interfaces_time_ptr));
+                } catch(const Json::Exception & json_expn) {
+                    RCUTILS_LOG_ERROR_NAMED(
+                        RCL_NODE_NAME,
+                        "error occurred during convert json to [%s%s]\n\twith : [%s]",
+                        RCL_STD_MSGS_TYPE,
+                        RCL_JSON_HEADER_FLAG,
+                        json_expn.what()
+                    );
+                    RCLCPP_LINE_ERROR();
+                }
+
+                return rcl_std_msgs_header_ptr;
+            }
 
             /**
              * @brief inline function for convert std_msgs::msg::String into Json style string
@@ -89,7 +123,7 @@ namespace ros2_mqtt_bridge {
                         RCL_NODE_NAME,
                         "error occurred during convert [%s%s] to json\n\twith : [%s]",
                         RCL_STD_MSGS_TYPE,
-                        RCL_JSON_STRING,
+                        RCL_JSON_STRING_FLAG,
                         json_expn.what()
                     );
                     RCLCPP_LINE_ERROR();
@@ -118,7 +152,7 @@ namespace ros2_mqtt_bridge {
                             RCL_NODE_NAME, 
                             "parsing JSON raw json string to [%s%s] completed : ", 
                             RCL_STD_MSGS_TYPE, 
-                            RCL_JSON_STRING
+                            RCL_JSON_STRING_FLAG
                         );
                         RCLCPP_LINE_INFO();
 
@@ -131,7 +165,7 @@ namespace ros2_mqtt_bridge {
                             RCL_NODE_NAME, 
                             "error occurred during parse json to [%s%s]\n\twith : [%s]",
                             RCL_STD_MSGS_TYPE,
-                            RCL_JSON_STRING,
+                            RCL_JSON_STRING_FLAG,
                             json_formatted_error_message.c_str()
                         );
                         RCLCPP_LINE_ERROR();
@@ -141,7 +175,7 @@ namespace ros2_mqtt_bridge {
                         RCL_NODE_NAME,
                         "error occurred during convert json to [%s%s]\n\twith : [%s]",
                         RCL_STD_MSGS_TYPE,
-                        RCL_JSON_STRING,
+                        RCL_JSON_STRING_FLAG,
                         json_expn.what()
                     );
                     RCLCPP_LINE_ERROR();
@@ -149,45 +183,11 @@ namespace ros2_mqtt_bridge {
 
                 return rcl_std_msgs_string_ptr;
             };
-
-            /**
-             * @brief inline function for convert Json::Value into std_msgs::msg::Header::UniquePtr
-             * @param raw_header_json target Json::Value
-             * @return rcl_std_msgs_header_ptr std_msgs::msg::Header::UniquePtr
-            */
-            inline std_msgs::msg::Header::UniquePtr json_to_header(const Json::Value & raw_header_json) {
-                std_msgs::msg::Header::UniquePtr rcl_std_msgs_header_ptr = std::make_unique<std_msgs::msg::Header>();
-                builtin_interfaces::msg::Time::UniquePtr rcl_builtin_interfaces_stamp_ptr = std::make_unique<builtin_interfaces::msg::Time>();
-
-                try {
-                    const std::string & raw_header_json_frame_id = raw_header_json.get(RCL_JSON_HEADER_FRAME_ID, RCL_JSON_STRING_DEFAULT).asString();
-                    rcl_std_msgs_header_ptr->set__frame_id(raw_header_json_frame_id);
-
-                    const double & raw_header_json_sec = raw_header_json.get(RCL_JSON_HEADER_SEC, RCL_JSON_DOUBLE_DEFAULT).asDouble();
-                    rcl_builtin_interfaces_stamp_ptr->set__sec(raw_header_json_sec);
-
-                    const double & raw_header_json_nanosec = raw_header_json.get(RCL_JSON_HEADER_NANOSEC, RCL_JSON_DOUBLE_DEFAULT).asDouble();
-                    rcl_builtin_interfaces_stamp_ptr->set__nanosec(raw_header_json_nanosec);
-
-                    rcl_std_msgs_header_ptr->set__stamp(std::move(*rcl_builtin_interfaces_stamp_ptr));
-                } catch(const Json::Exception & json_expn) {
-                    RCUTILS_LOG_ERROR_NAMED(
-                        RCL_NODE_NAME,
-                        "error occurred during convert json to [%s%s]\n\twith : [%s]",
-                        RCL_STD_MSGS_TYPE,
-                        RCL_JSON_HEADER,
-                        json_expn.what()
-                    );
-                    RCLCPP_LINE_ERROR();
-                }
-
-                return rcl_std_msgs_header_ptr;
-            }
     };
 
     /**
      * @class GeometryMessageConverter
-     * @brief final class for implements converting functions between geometry::msg - Json::Value
+     * @brief final class for implements converting functions between geometry_msgs - Json::Value
     */
     class GeometryMessageConverter final {
         private :
@@ -333,6 +333,31 @@ namespace ros2_mqtt_bridge {
 
             /**
              * @brief inline function for convert geometry_msgs::msg::Pose into Json::Value
+             * @param rcl_pose target geometry_msgs::msg::Pose
+             * @return pose_json Json::Value
+            */
+            inline Json::Value pose_to_json(const geometry_msgs::msg::Pose rcl_pose) {
+                Json::Value pose_json;
+
+                try {
+                    pose_json[RCL_JSON_POSITION] = this->point_to_json(rcl_pose.position);
+                    pose_json[RCL_JSON_ORIENTATION] = this->quaternion_to_json(rcl_pose.orientation);
+                } catch(const Json::Exception & json_expn) {
+                    RCUTILS_LOG_ERROR_NAMED(
+                        RCL_NODE_NAME,
+                        "error occurred during convert [%s%s] to json\n\twith : [%s]",
+                        RCL_GEOMETRY_MSGS_TYPE,
+                        RCL_JSON_POSE,
+                        json_expn.what()
+                    );
+                    RCLCPP_LINE_ERROR();
+                }
+
+                return pose_json;
+            };
+
+            /**
+             * @brief inline function for convert geometry_msgs::msg::Pose::SharedPtr into json styled string
              * @param rcl_pose_ptr target geometry_msgs::msg::Pose::SharedPtr
              * @return pose_json_string const std::string &
             */
@@ -345,7 +370,7 @@ namespace ros2_mqtt_bridge {
                 } catch(const Json::Exception & json_expn) {
                     RCUTILS_LOG_ERROR_NAMED(
                         RCL_NODE_NAME,
-                        "error occurred during convert [%s%s] to json\n\twith : [%s]",
+                        "error occurred during convert [%s%s] to json styled string\n\twith : [%s]",
                         RCL_GEOMETRY_MSGS_TYPE,
                         RCL_JSON_POSE,
                         json_expn.what()
@@ -437,33 +462,6 @@ namespace ros2_mqtt_bridge {
             };
 
             /**
-             * @brief inline function for convert geometry_msgs::msg::Twist into Json style string
-             * @param rcl_twist_ptr target geometry_msgs::msg::Twist::SharedPtr
-             * @return twist_json_string const std::string &
-            */
-            inline const std::string & twist_to_json_string(const geometry_msgs::msg::Twist::SharedPtr rcl_twist_ptr) {
-                Json::Value twist_json;
-
-                try {
-                    twist_json[RCL_JSON_LINEAR] = this->vector3_to_json(rcl_twist_ptr->linear);
-                    twist_json[RCL_JSON_ANGULAR] = this->vector3_to_json(rcl_twist_ptr->angular);
-                } catch(const Json::Exception & json_expn) {
-                    RCUTILS_LOG_ERROR_NAMED(
-                        RCL_NODE_NAME,
-                        "error occurred during convert [%s%s] to json\n\twith : [%s]",
-                        RCL_GEOMETRY_MSGS_TYPE,
-                        RCL_JSON_TWIST,
-                        json_expn.what()
-                    );
-                    RCLCPP_LINE_ERROR();
-                }
-
-                const std::string & twist_json_string = Json::StyledWriter().write(twist_json);
-
-                return twist_json_string;
-            };
-
-            /**
              * @brief inline function for convert Json::Value into geometry_msgs::msg::Vector3::UniquePtr
              * @param raw_vector3_json const Json::Value &
              * @return rcl_vector3_ptr geometry_msgs::msg::Vector3::SharedPtr
@@ -495,6 +493,58 @@ namespace ros2_mqtt_bridge {
             };
 
             /**
+             * @brief inline function for convert geometry_msgs::msg::Twist into json styled string
+             * @param rcl_twist target geometry_msgs::msg::Twist
+             * @return twist_json Json::Value
+            */
+            inline Json::Value twist_to_json(const geometry_msgs::msg::Twist rcl_twist) {
+                Json::Value twist_json;
+
+                try {
+                    twist_json[RCL_JSON_TWIST_LINEAR] = this->vector3_to_json(rcl_twist.linear);
+                    twist_json[RCL_JSON_TWIST_ANGULAR] = this->vector3_to_json(rcl_twist.angular);
+                } catch(const Json::Exception & json_expn) {
+                    RCUTILS_LOG_ERROR_NAMED(
+                        RCL_NODE_NAME,
+                        "error occurred during convert [%s%s] to json\n\twith : [%s]",
+                        RCL_GEOMETRY_MSGS_TYPE,
+                        RCL_JSON_TWIST,
+                        json_expn.what()
+                    );
+                    RCLCPP_LINE_ERROR();
+                }
+
+                return twist_json;
+            };
+
+            /**
+             * @brief inline function for convert geometry_msgs::msg::Twist into Json style string
+             * @param rcl_twist_ptr target geometry_msgs::msg::Twist::SharedPtr
+             * @return twist_json_string const std::string &
+            */
+            inline const std::string & twist_to_json_string(const geometry_msgs::msg::Twist::SharedPtr rcl_twist_ptr) {
+                Json::Value twist_json;
+
+                try {
+                    twist_json[RCL_JSON_TWIST_LINEAR] = this->vector3_to_json(rcl_twist_ptr->linear);
+                    twist_json[RCL_JSON_TWIST_ANGULAR] = this->vector3_to_json(rcl_twist_ptr->angular);
+                } catch(const Json::Exception & json_expn) {
+                    RCUTILS_LOG_ERROR_NAMED(
+                        RCL_NODE_NAME,
+                        "error occurred during convert [%s%s] to json styled string\n\twith : [%s]",
+                        RCL_GEOMETRY_MSGS_TYPE,
+                        RCL_JSON_TWIST,
+                        json_expn.what()
+                    );
+                    RCLCPP_LINE_ERROR();
+                }
+
+                const std::string & twist_json_string = Json::StyledWriter().write(twist_json);
+
+                return twist_json_string;
+            };
+
+            /**
              * @brief inline function for convert Json style string into geometry_msgs::msg::Twist::UniquePtr
              * @param raw_twist_json_string target const std::string &
              * @return rcl_twist_ptr geometry_msgs::msg::Twist::UniquePtr
@@ -515,7 +565,7 @@ namespace ros2_mqtt_bridge {
                         );
                         RCLCPP_LINE_INFO();
 
-                        Json::Value linear_json = twist_json.get(RCL_JSON_LINEAR, Json::Value::null);
+                        Json::Value linear_json = twist_json.get(RCL_JSON_TWIST_LINEAR, Json::Value::null);
                         bool is_linear_json_null = linear_json.isNull();
 
                         if(!is_linear_json_null) {
@@ -532,7 +582,7 @@ namespace ros2_mqtt_bridge {
                             RCLCPP_LINE_ERROR();
                         }
 
-                        Json::Value angular_json = twist_json.get(RCL_JSON_ANGULAR, Json::Value::null);
+                        Json::Value angular_json = twist_json.get(RCL_JSON_TWIST_ANGULAR, Json::Value::null);
                         bool is_angular_json_null = angular_json.isNull();
 
                         if(!is_angular_json_null) {
@@ -570,6 +620,59 @@ namespace ros2_mqtt_bridge {
                 }
 
                 return rcl_twist_ptr;
+            };
+
+            /**
+             * @brief inline function for convert std::array<double, 36UL> into Json::Value
+             * @param target_float_36UL_array target double 36UL array
+             * @return target_
+            */
+            inline Json::Value twist_double_36UL_array_to_json(const std::array<double, 36UL> target_float_36UL_array) {
+                Json::Value target_double_36UL_array_json;
+
+                try {
+                    const int & target_double_36UL_array_size = target_float_36UL_array.size();
+
+                    for(int i=0;i<target_double_36UL_array_size;i++) {
+                        target_double_36UL_array_json[i] = target_float_36UL_array[i];
+                    }
+                } catch(const Json::Exception & json_expn) {
+                    RCUTILS_LOG_ERROR_NAMED(
+                        RCL_NODE_NAME,
+                        "error occurred during convert [%s%s] to array json\n\twith : [%s]",
+                        RCL_GEOMETRY_MSGS_TYPE,
+                        RCL_JSON_TWIST_WITH_COVARIANCE_FLAG,
+                        json_expn.what()
+                    );
+                    RCLCPP_LINE_ERROR();
+                }
+
+                return target_double_36UL_array_json;
+            }
+
+            /**
+             * @brief inline function for convert geometry_msgs::msg::TwistWithCovariacne into Json::Value
+             * @param rcl_twist_with_covariance target geometry_msgs::msg::TwistWithCovariance
+             * @return twist_with_covariance_json Json::Value
+            */
+            inline Json::Value twist_with_covariance_to_json(const geometry_msgs::msg::TwistWithCovariance rcl_twist_with_covariance) {
+                Json::Value twist_with_covariance_json;
+
+                try {
+                    twist_with_covariance_json[RCL_JSON_TWIST] = this->twist_to_json(rcl_twist_with_covariance.twist);
+                    twist_with_covariance_json[RCL_JSON_COVARIANCE] = this->twist_double_36UL_array_to_json(rcl_twist_with_covariance.covariance);
+                } catch(const Json::Exception & json_expn) {
+                    RCUTILS_LOG_ERROR_NAMED(
+                        RCL_NODE_NAME,
+                        "error occurred during convert [%s%s] to json\n\twith : [%s]",
+                        RCL_GEOMETRY_MSGS_TYPE,
+                        RCL_JSON_TWIST_WITH_COVARIANCE_FLAG,
+                        json_expn.what()
+                    );
+                    RCLCPP_LINE_ERROR();
+                }
+
+                return twist_with_covariance_json;
             };
 
             /**
@@ -642,12 +745,40 @@ namespace ros2_mqtt_bridge {
             };
 
             /**
+             * @brief inline function for convert std::array<double, 36UL> into Json::Value
+             * @param target_double_36UL_array target double 36UL array
+             * @return parsed_array_json
+            */
+            inline Json::Value pose_double_36UL_array_to_json(const std::array<double, 36UL> target_double_36UL_array) {
+                Json::Value parsed_array_json;
+
+                try {
+                    const int & target_double_36UL_array_size = target_double_36UL_array.size();
+
+                    for(int i=0;i<target_double_36UL_array_size;i++) {
+                        parsed_array_json[i] = target_double_36UL_array[i];
+                    }
+                } catch(const Json::Exception & json_expn) {
+                    RCUTILS_LOG_ERROR_NAMED(
+                        RCL_NODE_NAME,
+                        "error occurred during convert [%s%s] to array json\n\twith : [%s]",
+                        RCL_GEOMETRY_MSGS_TYPE,
+                        RCL_JSON_POSE_WITH_COVARIANCE,
+                        json_expn.what()
+                    );
+                    RCLCPP_LINE_ERROR();
+                }
+
+                return parsed_array_json;
+            };
+
+            /**
              * @brief inline function for extract pose covariance array from Json::Value
              * @param raw_pose_covariance_json target const Json::Value &
              * @return rcl_pose_covariance_array
             */
             inline std::array<double, 36UL> extract_pose_covariance_array_from_json(const Json::Value & raw_pose_covariance_json) {
-                Json::Value pose_covariance_json = raw_pose_covariance_json[RCL_JSON_POSE_COVARIANCE];
+                Json::Value pose_covariance_json = raw_pose_covariance_json[RCL_JSON_COVARIANCE];
                 std::array<double, 36UL> rcl_pose_covariance_array;
 
                 try {
@@ -679,13 +810,38 @@ namespace ros2_mqtt_bridge {
                         RCL_NODE_NAME,
                         "error occurred during convert json to [%s%s]\n\twith : [%s]",
                         RCL_GEOMETRY_MSGS_TYPE,
-                        RCL_JSON_POSE_COVARIANCE,
+                        RCL_JSON_COVARIANCE,
                         json_expn.what()
                     );
                     RCLCPP_LINE_ERROR();
                 }
 
                 return rcl_pose_covariance_array;
+            };
+
+            /**
+             * @brief inline function for convert geometry_msgs::msg::PoseWithCovariacne into json styled string
+             * @param raw_pose_with_covariance target geometry_msgs::msg::PoseWithCovariance
+             * @return pose_with_covariance_json Json::Value
+            */
+            inline Json::Value pose_with_covariance_to_json(const geometry_msgs::msg::PoseWithCovariance rcl_pose_with_covariance) {
+                Json::Value pose_with_covariance_json;
+
+                try {
+                    pose_with_covariance_json[RCL_JSON_POSE] = this->pose_to_json(rcl_pose_with_covariance.pose);
+                    pose_with_covariance_json[RCL_JSON_COVARIANCE] = this->pose_double_36UL_array_to_json(rcl_pose_with_covariance.covariance);
+                } catch(const Json::Exception & json_expn) {
+                    RCUTILS_LOG_ERROR_NAMED(
+                        RCL_NODE_NAME,
+                        "error occurred during convert [%s%s] to json\n\twith : [%s]",
+                        RCL_GEOMETRY_MSGS_TYPE,
+                        RCL_JSON_COVARIANCE,
+                        json_expn.what()
+                    );
+                    RCLCPP_LINE_ERROR();
+                }
+
+                return pose_with_covariance_json;
             };
 
             /**
@@ -827,6 +983,10 @@ namespace ros2_mqtt_bridge {
             };
     };
 
+    /**
+     * @class SensorMessageConverter
+     * @brief final class for implements converting functions between sensor_msgs - Json::Value
+    */
     class SensorMessageConverter final {
         private :
             /**
@@ -834,6 +994,8 @@ namespace ros2_mqtt_bridge {
              * @see ros2_mqtt_bridge::StdMessageConverter
             */
             std::shared_ptr<ros2_mqtt_bridge::StdMessageConverter> rcl_std_msgs_json_converter_ptr_;
+
+            std::shared_ptr<ros2_mqtt_bridge::GeometryMessageConverter> rcl_geometry_msgs_json_converter_ptr_;
         public :
             /**
              * Create a new this class' instance
@@ -841,6 +1003,7 @@ namespace ros2_mqtt_bridge {
             */
             inline explicit SensorMessageConverter() {
                 rcl_std_msgs_json_converter_ptr_ = std::make_shared<ros2_mqtt_bridge::StdMessageConverter>();
+                rcl_geometry_msgs_json_converter_ptr_ = std::make_shared<ros2_mqtt_bridge::GeometryMessageConverter>();
             };
 
             /**
@@ -851,6 +1014,11 @@ namespace ros2_mqtt_bridge {
                 
             };
 
+            /**
+             * @brief inline function for convert sensor_msgs::msg::LaserScan::SharedPtr into json styled string
+             * @param rcl_laser_scan_ptr target const sensor_msgs::msg::LaserScan::SharedPtr
+             * @return laser_scan_json_string const std::string &
+            */
             inline const std::string & laser_scan_to_json_string(const sensor_msgs::msg::LaserScan::SharedPtr rcl_laser_scan_ptr) {
                 Json::Value laser_scan_json;
 
@@ -879,16 +1047,21 @@ namespace ros2_mqtt_bridge {
                         RCL_NODE_NAME,
                         "error occurred during convert [%s%s] to json\n\twith : [%s]",
                         RCL_SENSOR_MSGS_TYPE,
-                        RCL_JSON_LASER_SCAN,
+                        RCL_JSON_LASER_SCAN_FLAG,
                         json_expn.what()
                     );
                     RCLCPP_LINE_ERROR();
                 }
 
-                const std::string & laser_scan_json_str = Json::StyledWriter().write(laser_scan_json);
-                return laser_scan_json_str;
+                const std::string & laser_scan_json_string = Json::StyledWriter().write(laser_scan_json);
+                return laser_scan_json_string;
             };
 
+            /**
+             * @brief inline function for extract laser scan array from Json::Value
+             * @param raw_laser_scan_array_json target parent Json
+             * @param target_array_key target key
+            */
             inline std::vector<float> extract_laser_scan_array_from_json(const Json::Value & raw_laser_scan_array_json, const char * target_array_key) {
                 Json::Value scan_array_json = raw_laser_scan_array_json[target_array_key];
                 std::vector<float> rcl_scan_array;
@@ -926,7 +1099,7 @@ namespace ros2_mqtt_bridge {
 
             /**
              * @brief inline function for convert Json::Value into sensor_msgs::msg::LaserScan::UniquePtr
-             * @param raw_laser_scan_json target const Json::Value &
+             * @param raw_laser_scan_json target Json
              * @return rcl_laser_scan_ptr sensor_msgs::msg::LaserScan::UniquePtr
             */
             inline sensor_msgs::msg::LaserScan::UniquePtr json_to_laser_scan(const Json::Value & raw_laser_scan_json) {
@@ -964,13 +1137,73 @@ namespace ros2_mqtt_bridge {
                         RCL_NODE_NAME,
                         "error occurred during convert json to [%s%s]\n\twith : [%s]",
                         RCL_SENSOR_MSGS_TYPE,
-                        RCL_JSON_LASER_SCAN,
+                        RCL_JSON_LASER_SCAN_FLAG,
                         json_expn.what()
                     );
                     RCLCPP_LINE_ERROR();
                 }
 
                 return rcl_laser_scan_ptr;
+            };
+
+            /**
+             * @brief inline function for convert std::array<double, 9UL> into Json::Value
+             * @param target_double_9UL_array target double 9UL array
+             * @return target_double_9UL_array_json Json::Value
+            */
+            inline Json::Value imu_double_9UL_array_to_array_json(const std::array<double, 9UL> target_double_9UL_array) {
+                Json::Value target_double_9UL_array_json;
+
+                try {
+                    const int & target_double_9UL_array_size = target_double_9UL_array.size();
+
+                    for(int i=0;i<target_double_9UL_array_size;i++) {
+                        target_double_9UL_array_json[i] = target_double_9UL_array[i];
+                    }
+                } catch(const Json::Exception & json_expn) {
+                    RCUTILS_LOG_ERROR_NAMED(
+                        RCL_NODE_NAME,
+                        "error occurred during convert [%s%s] to array json\n\twith : [%s]",
+                        RCL_SENSOR_MSGS_TYPE,
+                        RCL_JSON_IMU_FLAG,
+                        json_expn.what()
+                    );
+                    RCLCPP_LINE_ERROR();
+                }
+
+                return target_double_9UL_array_json;
+            };
+
+            /**
+             * @brief inline function for convert sensor_msgs::msg::Imu::SharedPtr into json styled string
+             * @param rcl_imu_ptr target sensor_msgs::msg::Imu::SharedPtr
+             * @return imu_json const std::string &
+            */
+            inline const std::string & imu_to_json_string(const sensor_msgs::msg::Imu::SharedPtr rcl_imu_ptr) {
+                Json::Value imu_json;
+
+                try {
+                    imu_json[RCL_JSON_HEADER_KEY] = rcl_std_msgs_json_converter_ptr_->header_to_json(rcl_imu_ptr->header);
+                    imu_json[RCL_JSON_ORIENTATION] = rcl_geometry_msgs_json_converter_ptr_->quaternion_to_json(rcl_imu_ptr->orientation);
+                    imu_json[RCL_JSON_ORIENTATION_COVARIANCE] = this->imu_double_9UL_array_to_array_json(rcl_imu_ptr->orientation_covariance);
+                    imu_json[RCL_JSON_ANGULAR_VELOCITY] = rcl_geometry_msgs_json_converter_ptr_->vector3_to_json(rcl_imu_ptr->angular_velocity);
+                    imu_json[RCL_JSON_ANGULAR_VELOCITY_COVARIANCE] = this->imu_double_9UL_array_to_array_json(rcl_imu_ptr->angular_velocity_covariance);
+                    imu_json[RCL_JSON_LINEAR_ACCELERATION] = rcl_geometry_msgs_json_converter_ptr_->vector3_to_json(rcl_imu_ptr->linear_acceleration);
+                    imu_json[RCL_JSON_LINEAR_ACCELERATION_COVARIANCE] = this->imu_double_9UL_array_to_array_json(rcl_imu_ptr->linear_acceleration_covariance);
+                } catch(const Json::Exception & json_expn) {
+                    RCUTILS_LOG_ERROR_NAMED(
+                        RCL_NODE_NAME,
+                        "error occurred during convert [%s%s] to json styled string\n\twith : [%s]",
+                        RCL_SENSOR_MSGS_TYPE,
+                        RCL_JSON_IMU_FLAG,
+                        json_expn.what()
+                    );
+                    RCLCPP_LINE_ERROR();
+                }
+
+                const std::string & imu_json_string = Json::StyledWriter().write(imu_json);
+
+                return imu_json_string;
             };
 
             /**
@@ -1026,7 +1259,7 @@ namespace ros2_mqtt_bridge {
                         RCL_NODE_NAME,
                         "error occurred during convert [%s%s] to array json\n\twith : [%s]",
                         RCL_SENSOR_MSGS_TYPE,
-                        RCL_JSON_NAV_SAT_FIX,
+                        RCL_JSON_NAV_SAT_FIX_FLAG,
                         json_expn.what()
                     );
                     RCLCPP_LINE_ERROR();
@@ -1059,7 +1292,7 @@ namespace ros2_mqtt_bridge {
                         RCL_NODE_NAME,
                         "error occurred during convert json to [%s%s]\n\twith : [%s]",
                         RCL_SENSOR_MSGS_TYPE,
-                        RCL_JSON_NAV_SAT_FIX,
+                        RCL_JSON_NAV_SAT_FIX_FLAG,
                         json_expn.what()
                     );
                     RCLCPP_LINE_ERROR();
@@ -1089,7 +1322,7 @@ namespace ros2_mqtt_bridge {
                         RCL_NODE_NAME,
                         "error occurred during convert [%s%s] to array json\n\twith : [%s]",
                         RCL_SENSOR_MSGS_TYPE,
-                        RCL_JSON_BATTERY_STATE,
+                        RCL_JSON_BATTERY_STATE_FLAG,
                         json_expn.what()
                     );
                     RCLCPP_LINE_ERROR();
@@ -1150,11 +1383,70 @@ namespace ros2_mqtt_bridge {
                         RCL_NODE_NAME,
                         "error occurred during convert json to [%s%s]\n\twith : [%s]",
                         RCL_SENSOR_MSGS_TYPE,
-                        RCL_JSON_BATTERY_STATE,
+                        RCL_JSON_BATTERY_STATE_FLAG,
                         json_expn.what()
                     );
                     RCLCPP_LINE_ERROR();
                 }
+            };
+    };
+
+    /**
+     * @class NavMessageConverter
+     * @brief final class for implements converting functions between nav_msgs - Json::Value
+    */
+    class NavMessageConverter final {
+        private :
+            /**
+             * @brief shared pointer for ros2_mqtt_bridge::StdMessageConverter
+             * @see ros2_mqtt_bridge::StdMessageConverter
+            */
+            std::shared_ptr<ros2_mqtt_bridge::StdMessageConverter> rcl_std_msgs_json_converter_ptr_;
+            std::shared_ptr<ros2_mqtt_bridge::GeometryMessageConverter> rcl_geometry_msgs_json_converter_ptr_;
+        public :
+            /**
+             * Create a new this class' instance
+             * @brief Default Constructor
+            */
+            inline explicit NavMessageConverter() {
+
+            };
+
+            /**
+             * Destroy this class' instance
+             * @brief Default Destructor
+            */
+            inline virtual ~NavMessageConverter() {
+
+            };
+
+            /**
+             * @brief inline function for nav_msgs::msg::Odometry::SharedPtr into json styled string
+             * @param rcl_odometry_ptr target nav_msgs::msg::Odometry::SharedPtr
+             * @return odometry_json_string const std::string &
+            */
+            inline const std::string & odometry_to_json(const nav_msgs::msg::Odometry::SharedPtr rcl_odometry_ptr) {
+                Json::Value odometry_json;
+
+                try {
+                    odometry_json[RCL_JSON_HEADER_KEY] = rcl_std_msgs_json_converter_ptr_->header_to_json(rcl_odometry_ptr->header);
+                    odometry_json[RCL_JSON_CHILD_FRAME_ID] = rcl_odometry_ptr->child_frame_id;
+                    odometry_json[RCL_JSON_POSE] = rcl_geometry_msgs_json_converter_ptr_->pose_with_covariance_to_json(rcl_odometry_ptr->pose);
+                    odometry_json[RCL_JSON_TWIST] = rcl_geometry_msgs_json_converter_ptr_->twist_with_covariance_to_json(rcl_odometry_ptr->twist);
+                } catch(const Json::Exception & json_expn) {
+                    RCUTILS_LOG_ERROR_NAMED(
+                        RCL_NODE_NAME,
+                        "error occurred during convert [%s%s] to json\n\twith : [%s]",
+                        RCL_NAV_MSGS_TYPE,
+                        RCL_JSON_ODOMETRY_FLAG,
+                        json_expn.what()
+                    );
+                    RCLCPP_LINE_ERROR();
+                }
+
+                const std::string & odometry_json_string = Json::StyledWriter().write(odometry_json);
+
+                return odometry_json_string;
             };
     };
 }
