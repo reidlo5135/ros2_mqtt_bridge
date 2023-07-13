@@ -1388,6 +1388,10 @@ namespace ros2_mqtt_bridge {
                     );
                     RCLCPP_LINE_ERROR();
                 }
+
+                const std::string & battery_state_json_string = Json::StyledWriter().write(battery_state_json);
+
+                return battery_state_json_string;
             };
     };
 
