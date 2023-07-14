@@ -57,8 +57,10 @@
 
 #include <std_msgs/msg/string.hpp>
 #include <std_msgs/msg/header.hpp>
+#include <std_msgs/msg/empty.hpp>
 
 #include <builtin_interfaces/msg/time.hpp>
+#include <builtin_interfaces/msg/duration.hpp>
 
 #include <geometry_msgs/msg/twist.hpp>
 #include <sensor_msgs/msg/nav_sat_fix.hpp>
@@ -67,6 +69,7 @@
 #include <geometry_msgs/msg/point.hpp>
 #include <geometry_msgs/msg/vector3.hpp>
 #include <geometry_msgs/msg/pose_with_covariance_stamped.hpp>
+#include <geometry_msgs/msg/transform_stamped.hpp>
 
 #include <sensor_msgs/msg/laser_scan.hpp>
 #include <sensor_msgs/msg/battery_state.hpp>
@@ -77,9 +80,18 @@
 #include <nav_msgs/msg/odometry.hpp>
 #include <nav_msgs/msg/occupancy_grid.hpp>
 #include <nav_msgs/msg/path.hpp>
+
+#include <tf2_msgs/msg/tf_message.hpp>
+
 #include <nav2_msgs/action/navigate_to_pose.hpp>
 
 #include <tf2_msgs/msg/tf_message.hpp>
+
+/**
+ * ------------------------------------------------------
+ * ------------------ RCL AREA START --------------------
+ * ------------------------------------------------------
+*/
 
 /**
  * @brief static const instance for define name of rclcpp::Node
@@ -127,6 +139,41 @@ static constexpr const char * RCL_ACTION_CLIENT_FLAG = "action - client";
 static constexpr const char * RCL_ACTION_SERVER_FLAG = "action - server";
 
 /**
+ * @brief static const instance for define message type of std_msgs::msg
+*/
+static constexpr const char * RCL_STD_MSGS_TYPE = "std_msgs/msg/";
+
+/**
+ * @brief static const instance for define message type of builtin_interfaces::msg
+*/
+static constexpr const char * RCL_BUILT_IN_MSGS_TYPE = "builtin_interfaces/msg/";
+
+/**
+ * @brief static const instance for define message type of geometry_msgs::msg
+*/
+static constexpr const char * RCL_GEOMETRY_MSGS_TYPE = "geometry_msgs/msg/";
+
+/**
+ * @brief static const instance for define message type of sensor_msgs::msg
+*/
+static constexpr const char * RCL_SENSOR_MSGS_TYPE = "sensor_msgs/msg/";
+
+/**
+ * @brief static const instance for define message type of nav_msgs::msg
+*/
+static constexpr const char * RCL_NAV_MSGS_TYPE = "nav_msgs/msg/";
+
+/**
+ * @brief static const instance for define message type of tf2_msgs::msg
+*/
+static constexpr const char * RCL_TF2_MSGS_TYPE = "tf2_msgs/msg";
+
+/**
+ * @brief static const instance for define message type of nav2_msgs::msg
+*/
+static constexpr const char * RCL_NAV2_MSGS_TYPE = "nav2_msgs/msg/";
+
+/**
  * @brief static const instance for define ignore topic(topic : /parameter_events)
 */
 static constexpr const char * RCL_PARAMETER_EVENTS_TOPIC = "/parameter_events";
@@ -155,6 +202,19 @@ static constexpr const char * RCL_IMU_DATA_TOPIC = "/imu/data";
  * @brief static const instance for define topic(topic : /scan)
 */
 static constexpr const char * RCL_SCAN_TOPIC = "/scan";
+
+/**
+ * ------------------------------------------------------
+ * ------------------- RCL AREA END ---------------------
+ * ------------------------------------------------------
+*/
+
+
+/**
+ * ------------------------------------------------------
+ * ---------------- RCL JSON AREA START -----------------
+ * ------------------------------------------------------
+*/
 
 /**
  * @brief static const instance for define jsoncpp string default value
@@ -199,7 +259,7 @@ static constexpr const char * RCL_JSON_HEADER_FLAG = "Header";
 /**
  * @brief static const instance for define jsoncpp std_msgs::msg::Header header key
 */
-static constexpr const char * RCL_JSON_HEADER_KEY = "header";
+static constexpr const char * RCL_JSON_HEADER = "header";
 
 /**
  * @brief static const instance for define jsoncpp std_msgs::msg::Header frame_id key
@@ -212,6 +272,16 @@ static constexpr const char * RCL_JSON_HEADER_FRAME_ID = "frame_id";
 static constexpr const char * RCL_JSON_HEADER_SEQ = "seq";
 
 /**
+ * @brief static const instance for define jsoncpp std_msgs::msg::Empty flag
+*/
+static constexpr const char * RCL_JSON_EMPTY_FLAG = "Empty";
+
+/**
+ * @brief static const instance for define jsoncpp std_msgs::msg::Empty structure_needs_at_least_one_member key
+*/
+static constexpr const char * RCL_JSON_EMPTY_STRCUTURE_NEEDS_AT_LEAST_ONE_MEMBER = "structure_needs_at_least_one_member";
+
+/**
  * @brief static const instance for define jsoncpp builtin_interfaces::msg::Time flag
 */
 static constexpr const char * RCL_JSON_BUILT_IN_TIME_FLAG = "Time";
@@ -219,12 +289,27 @@ static constexpr const char * RCL_JSON_BUILT_IN_TIME_FLAG = "Time";
 /**
  * @brief static const instance for define jsoncpp builtin_interfaces::msg::Time sec key
 */
-static constexpr const char * RCL_JSON_BUILT_IN_TIME_SEC = "sec";
+static constexpr const char * RCL_JSON_BUILT_IN_INTERFACES_TIME_SEC = "sec";
 
 /**
  * @brief static const instance for define jsoncpp builtin_interfaces::msg::Time nanosec key
 */
-static constexpr const char * RCL_JSON_BUILT_IN_TIME_NANOSEC = "nanosec";
+static constexpr const char * RCL_JSON_BUILT_IN_INTERFACES_TIME_NANOSEC = "nanosec";
+
+/**
+ * @brief static const instance for define jsoncpp builtin_interfaces::msg::Duration flag
+*/
+static constexpr const char * RCL_JSON_BUILT_IN_INTERFACES_DURATION_FLAG = "Duration";
+
+/**
+ * @brief static const instance for define jsoncpp builtin_interfaces::msg::Duration sec key
+*/
+static constexpr const char * RCL_JSON_BUILT_IN_INTERFACES_DURATION_SEC = "sec";
+
+/**
+ * @brief static const instance for define jsoncpp builtin_interfaces::msg::Duration nanosec key
+*/
+static constexpr const char * RCL_JSON_BUILT_IN_INTERFACES_DURATION_NANOSEC = "nanosec";
 
 /**
  * @brief static const instance for define jsoncpp std_msgs::msg::Header stamp key
@@ -355,6 +440,31 @@ static constexpr const char * RCL_JSON_POSE_WITH_COVARIANCE = "pose_with_covaria
  * @brief static const instance for define jsoncpp geometry_msgs::msg::PoseWithCovarianceStamped pose_with_covariance_stamped key
 */
 static constexpr const char * RCL_JSON_POSE_WITH_COVARIANCE_STAMPED = "pose_with_covariance_stamped";
+
+/**
+ * @brief static const instance for define jsoncpp geometry_msgs::msg::Transform flag
+*/
+static constexpr const char * RCL_JSON_TRANSFORM_FLAG = "Transform";
+
+/**
+ * @brief static const instance for define jsoncpp geometry_msgs::msg::TransformStamped transforms key
+*/
+static constexpr const char * RCL_JSON_TRANSFORM_ROTATION = "rotation";
+
+/**
+ * @brief static const instance for define jsoncpp geometry_msgs::msg::TransformStamped transforms key
+*/
+static constexpr const char * RCL_JSON_TRANSFORM_TRANSLATION = "translation";
+
+/**
+ * @brief static const instance for define jsoncpp geometry_msgs::msg::TransformStamped flag
+*/
+static constexpr const char * RCL_JSON_TRANSFORM_STAMPED_FLAG = "TransformStamped";
+
+/**
+ * @brief static const instance for define jsoncpp geometry_msgs::msg::TransformStamped transforms key
+*/
+static constexpr const char * RCL_JSON_TRANSFORM_STAMPED_TRANSFORM = "transform";
 
 /**
  * @brief static const instance for define jsoncpp sensor_msgs::msg::LaserScan flag
@@ -732,31 +842,6 @@ static constexpr const char * RCL_JSON_BATTERY_STATE_SERIAL_NUMBER = "serial_num
 static constexpr const char * RCL_JSON_ODOMETRY_FLAG = "Odometry";
 
 /**
- * @brief static const instance for define message type of std_msgs::msg
-*/
-static constexpr const char * RCL_STD_MSGS_TYPE = "std_msgs/msg/";
-
-/**
- * @brief static const instance for define message type of builtin_interfaces::msg
-*/
-static constexpr const char * RCL_BUILT_IN_MSGS_TYPE = "builtin_interfaces/msg/";
-
-/**
- * @brief static const instance for define message type of geometry_msgs::msg
-*/
-static constexpr const char * RCL_GEOMETRY_MSGS_TYPE = "geometry_msgs/msg/";
-
-/**
- * @brief static const instance for define message type of sensor_msgs::msg
-*/
-static constexpr const char * RCL_SENSOR_MSGS_TYPE = "sensor_msgs/msg/";
-
-/**
- * @brief static const instance for define message type of nav_msgs::msg
-*/
-static constexpr const char * RCL_NAV_MSGS_TYPE = "nav_msgs/msg/";
-
-/**
  * @brief static const instance for define message type of nav_msgs::msg::MapMetaData flag
 */
 static constexpr const char * RCL_JSON_MAP_META_DATA_FLAG = "MapMetaData";
@@ -812,9 +897,82 @@ static constexpr const char * RCL_JSON_PATH_FLAG = "Path";
 static constexpr const char * RCL_JSON_PATH_POSES = "poses";
 
 /**
- * @brief static const instance for define message type of nav2_msgs::msg
+ * @brief static const instance for define message type of tf2_msgs::msg::TFMessage flag
 */
-static constexpr const char * RCL_NAV2_MSGS_TYPE = "nav2_msgs/msg/";
+static constexpr const char * RCL_JSON_TF_MESSAGE_FLAG = "TFMessage";
+
+/**
+ * @brief static const instance for define message type of tf2_msgs::msg::TFMessage transforms key
+*/
+static constexpr const char * RCL_JSON_TF_MESSAGE_TRANSFORMS = "transforms";
+
+/**
+ * @brief static const instance for define message type of nav2_msgs::action::NavigateToPose_Request flag
+*/
+static constexpr const char * RCL_JSON_NAVIGATE_TO_POSE_GOAL_FLAG = "NavigateToPose_Goal";
+
+/**
+ * @brief static const instance for define message type of nav2_msgs::action::NavigateToPose_Request pose key
+*/
+static constexpr const char * RCL_JSON_NAVIGATE_TO_POSE_GOAL_POSE = "pose";
+
+/**
+ * @brief static const instance for define message type of nav2_msgs::action::NavigateToPose_Request behavior_tree key
+*/
+static constexpr const char * RCL_JSON_NAVIGATE_TO_POSE_GOAL_BEHAVIOR_TREE = "behavior_tree";
+
+/**
+ * @brief static const instance for define message type of nav2_msgs::action::NavigateToPose_Resposne flag
+*/
+static constexpr const char * RCL_JSON_NAVIGATE_TO_POSE_RESULT_FLAG = "NavigateToPose_Result";
+
+/**
+ * @brief static const instance for define message type of nav2_msgs::action::NavigateToPose_Resposne result key
+*/
+static constexpr const char * RCL_JSON_NAVIGATE_TO_POSE_RESULT_RESULT = "result";
+
+/**
+ * @brief static const instance for define message type of nav2_msgs::action::NavigateToPose_FeedBack flag
+*/
+static constexpr const char * RCL_JSON_NAVIGATE_TO_POSE_FEEDBACK_FLAG = "NavigateToPose_FeedBack";
+
+/**
+ * @brief static const instance for define message type of nav2_msgs::action::NavigateToPose_FeedBack current_pose key
+*/
+static constexpr const char * RCL_JSON_NAVIGATE_TO_POSE_FEEDBACK_CURRENT_POSE = "current_pose";
+
+/**
+ * @brief static const instance for define message type of nav2_msgs::action::NavigateToPose_FeedBack navigation_time key
+*/
+static constexpr const char * RCL_JSON_NAVIGATE_TO_POSE_FEEDBACK_NAVIGATION_TIME = "navigation_time";
+
+/**
+ * @brief static const instance for define message type of nav2_msgs::action::NavigateToPose_FeedBack estimated_time_remaining key
+*/
+static constexpr const char * RCL_JSON_NAVIGATE_TO_POSE_FEEDBACK_ESTIMATED_TIME_REMAINING = "estimated_time_remaining";
+
+/**
+ * @brief static const instance for define message type of nav2_msgs::action::NavigateToPose_FeedBack number_of_recoveries key
+*/
+static constexpr const char * RCL_JSON_NAVIGATE_TO_POSE_FEEDBACK_NUMBER_OF_RECOVERIES = "number_of_recoveries";
+
+/**
+ * @brief static const instance for define message type of nav2_msgs::action::NavigateToPose_FeedBack distance_remaining key
+*/
+static constexpr const char * RCL_JSON_NAVIGATE_TO_POSE_FEEDBACK_DISTANCE_REMAINING = "distance_remaining";
+
+/**
+ * ------------------------------------------------------
+ * ----------------- RCL JSON AREA ENDED ----------------
+ * ------------------------------------------------------
+*/
+
+
+/**
+ * ------------------------------------------------------
+ * ------------------ MQTT AREA STARTED -----------------
+ * ------------------------------------------------------
+*/
 
 /**
  * @brief static const instance for define address of MQTT
@@ -835,6 +993,12 @@ static constexpr const int & MQTT_DEFAULT_QOS = 0;
  * @brief static const instance for define retry attempts of MQTT
 */
 static constexpr const int & MQTT_RETRY_ATTEMPTS = 5;
+
+/**
+ * ------------------------------------------------------
+ * ------------------- MQTT AREA ENDED ------------------
+ * ------------------------------------------------------
+*/
 
 /**
  * @brief define macros area
