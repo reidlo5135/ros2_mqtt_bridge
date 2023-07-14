@@ -58,6 +58,8 @@
 #include <std_msgs/msg/string.hpp>
 #include <std_msgs/msg/header.hpp>
 
+#include <builtin_interfaces/msg/time.hpp>
+
 #include <geometry_msgs/msg/twist.hpp>
 #include <sensor_msgs/msg/nav_sat_fix.hpp>
 #include <sensor_msgs/msg/nav_sat_status.hpp>
@@ -72,9 +74,9 @@
 #include <sensor_msgs/msg/nav_sat_fix.hpp>
 #include <sensor_msgs/msg/nav_sat_status.hpp>
 
-#include <nav_msgs/msg/path.hpp>
-#include <nav_msgs/srv/get_map.hpp>
 #include <nav_msgs/msg/odometry.hpp>
+#include <nav_msgs/msg/occupancy_grid.hpp>
+#include <nav_msgs/msg/path.hpp>
 #include <nav2_msgs/action/navigate_to_pose.hpp>
 
 #include <tf2_msgs/msg/tf_message.hpp>
@@ -210,14 +212,19 @@ static constexpr const char * RCL_JSON_HEADER_FRAME_ID = "frame_id";
 static constexpr const char * RCL_JSON_HEADER_SEQ = "seq";
 
 /**
- * @brief static const instance for define jsoncpp std_msgs::msg::Header sec key
+ * @brief static const instance for define jsoncpp builtin_interfaces::msg::Time flag
 */
-static constexpr const char * RCL_JSON_HEADER_SEC = "sec";
+static constexpr const char * RCL_JSON_BUILT_IN_TIME_FLAG = "Time";
 
 /**
- * @brief static const instance for define jsoncpp std_msgs::msg::Header nanosec key
+ * @brief static const instance for define jsoncpp builtin_interfaces::msg::Time sec key
 */
-static constexpr const char * RCL_JSON_HEADER_NANOSEC = "nanosec";
+static constexpr const char * RCL_JSON_BUILT_IN_TIME_SEC = "sec";
+
+/**
+ * @brief static const instance for define jsoncpp builtin_interfaces::msg::Time nanosec key
+*/
+static constexpr const char * RCL_JSON_BUILT_IN_TIME_NANOSEC = "nanosec";
 
 /**
  * @brief static const instance for define jsoncpp std_msgs::msg::Header stamp key
@@ -730,6 +737,11 @@ static constexpr const char * RCL_JSON_ODOMETRY_FLAG = "Odometry";
 static constexpr const char * RCL_STD_MSGS_TYPE = "std_msgs/msg/";
 
 /**
+ * @brief static const instance for define message type of builtin_interfaces::msg
+*/
+static constexpr const char * RCL_BUILT_IN_MSGS_TYPE = "builtin_interfaces/msg/";
+
+/**
  * @brief static const instance for define message type of geometry_msgs::msg
 */
 static constexpr const char * RCL_GEOMETRY_MSGS_TYPE = "geometry_msgs/msg/";
@@ -743,6 +755,61 @@ static constexpr const char * RCL_SENSOR_MSGS_TYPE = "sensor_msgs/msg/";
  * @brief static const instance for define message type of nav_msgs::msg
 */
 static constexpr const char * RCL_NAV_MSGS_TYPE = "nav_msgs/msg/";
+
+/**
+ * @brief static const instance for define message type of nav_msgs::msg::MapMetaData flag
+*/
+static constexpr const char * RCL_JSON_MAP_META_DATA_FLAG = "MapMetaData";
+
+/**
+ * @brief static const instance for define message type of nav_msgs::msg::MapMetaData map_load_time key
+*/
+static constexpr const char * RCL_JSON_MAP_META_DATA_MAP_LOAD_TIME = "map_load_time";
+
+/**
+ * @brief static const instance for define message type of nav_msgs::msg::MapMetaData resolution key
+*/
+static constexpr const char * RCL_JSON_MAP_META_DATA_RESOLUTION = "resolution";
+
+/**
+ * @brief static const instance for define message type of nav_msgs::msg::MapMetaData width key
+*/
+static constexpr const char * RCL_JSON_MAP_META_DATA_WIDTH = "width";
+
+/**
+ * @brief static const instance for define message type of nav_msgs::msg::MapMetaData height key
+*/
+static constexpr const char * RCL_JSON_MAP_META_DATA_HEIGHT = "height";
+
+/**
+ * @brief static const instance for define message type of nav_msgs::msg::MapMetaData origin key
+*/
+static constexpr const char * RCL_JSON_MAP_META_DATA_ORIGIN = "origin";
+
+/**
+ * @brief static const instance for define message type of nav_msgs::msg::OccupancyGrid flag
+*/
+static constexpr const char * RCL_JSON_OCCUPANGY_GRID_FLAG = "OccupancyGrid";
+
+/**
+ * @brief static const instance for define message type of nav_msgs::msg::OccupancyGrid info key
+*/
+static constexpr const char * RCL_JSON_OCCUPANCY_GRID_INFO = "info";
+
+/**
+ * @brief static const instance for define message type of nav_msgs::msg::OccupancyGrid data key
+*/
+static constexpr const char * RCL_JSON_OCCUPANCY_GRID_DATA = "data";
+
+/**
+ * @brief static const instance for define message type of nav_msgs::msg::Path flag
+*/
+static constexpr const char * RCL_JSON_PATH_FLAG = "Path";
+
+/**
+ * @brief static const instance for define message type of nav_msgs::msg::Path poses key
+*/
+static constexpr const char * RCL_JSON_PATH_POSES = "poses";
 
 /**
  * @brief static const instance for define message type of nav2_msgs::msg
