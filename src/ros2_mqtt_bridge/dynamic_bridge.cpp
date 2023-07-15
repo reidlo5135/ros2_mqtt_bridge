@@ -38,6 +38,11 @@ rcl_connection_manager_ptr_(rcl_connection_manager_ptr),
 mqtt_async_client_(MQTT_ADDRESS, MQTT_CLIENT_ID) {
 
     rcl_std_msgs_converter_ptr_ = std::make_shared<ros2_mqtt_bridge::StdMessageConverter>();
+    rcl_geometry_msgs_converter_ptr_ = std::make_shared<ros2_mqtt_bridge::GeometryMessageConverter>();
+    rcl_sensor_msgs_converter_ptr_ = std::make_shared<ros2_mqtt_bridge::SensorMessageConverter>();
+    rcl_nav_msgs_converter_ptr_ = std::make_shared<ros2_mqtt_bridge::NavMessageConverter>();
+    rcl_tf_msgs_converter_ptr_ = std::make_shared<ros2_mqtt_bridge::TFMessageConverter>();
+    rcl_navigate_to_pose_action_converter_ptr_ = std::make_shared<ros2_mqtt_bridge::NavigateToPoseActionConverter>();
 
     /**
      * invoke for establish MQTT connection
@@ -244,6 +249,20 @@ void ros2_mqtt_bridge::RCLMQTTBridgeManager::foundate_mqtt_to_rcl(std::map<std::
 }
 
 /**
+* @brief function for compare MQTT topic and RCL topic before bridge MQTT to RCL
+* @param mqtt_topic target MQTT topic
+* @param rcl_topic target RCL topic
+* @return is_mqtt_topic_equals_rcl_topic bool
+*/
+bool ros2_mqtt_bridge::RCLMQTTBridgeManager::bridge_mqtt_to_rcl_topic_cmp(const std::string & mqtt_topic, const char * rcl_topic) {
+    const char * cmqtt_topic = mqtt_topic.c_str();
+
+    bool is_mqtt_topic_equals_rcl_topic = (strcmp(cmqtt_topic, rcl_topic) == 0);
+
+    return is_mqtt_topic_equals_rcl_topic;
+}
+
+/**
 * @brief function for bridge MQTT to RCL after delivered mqtt_subscription callback data
 * @param mqtt_topic target MQTT topic
 * @param mqtt_payload received MQTT payload
@@ -258,13 +277,37 @@ void ros2_mqtt_bridge::RCLMQTTBridgeManager::bridge_mqtt_to_rcl(const std::strin
     );
     RCLCPP_LINE_INFO();
 
-    if(strcmp(mqtt_topic.c_str(), RCL_CHATTER_TOPIC) == 0) {
+    if(bridge_mqtt_to_rcl_topic_cmp(mqtt_topic, RCL_CHATTER_TOPIC)) {
         RCLCPP_INFO(rcl_node_ptr_->get_logger(), "bridge MQTT to RCL with\n\ttopic : [%s]\n\tpayload : [%s]", mqtt_topic.c_str(), mqtt_payload.c_str());
         RCLCPP_LINE_INFO();
         
         std_msgs::msg::String::UniquePtr rcl_std_msgs_string_ptr = rcl_std_msgs_converter_ptr_->json_to_string(mqtt_payload);
         rcl_chatter_publisher_ptr_->publish(std::move(*rcl_std_msgs_string_ptr));
     }
+}
+
+/**
+* @brief function for compare RCL publisher's topic and RCL target topic before bridge RCL to MQTT
+* @param rcl_publisher_topic target RCL publisher topic const char *
+* @param rcl_target_topic target RCL publisher topic const char *
+* @return is_rcl_publisher_topic_equals_rcl_target_topic bool
+*/
+bool ros2_mqtt_bridge::RCLMQTTBridgeManager::bridge_rcl_to_mqtt_topic_cmp(const char * rcl_publisher_topic, const char * rcl_target_topic) {
+    bool is_rcl_publisher_topic_equals_rcl_target_topic = (strcmp(rcl_publisher_topic, rcl_target_topic) == 0);
+
+    return is_rcl_publisher_topic_equals_rcl_target_topic;
+}
+
+/**
+* @brief function for compare RCL publisher's message type and RCL target message type before bridge RCL to MQTT
+* @param rcl_publisher_msgs_type target RCL publisher's message type const std::string &
+* @param rcl_target_msgs_type target RCL message type const char *
+* @return is_rcl_publisher_message_type_equals_rcl_target_message_type bool
+*/
+bool ros2_mqtt_bridge::RCLMQTTBridgeManager::bridge_rcl_to_mqtt_msgs_type_cmp(const std::string & rcl_publisher_msgs_type, const char * rcl_target_msgs_type) {
+    bool is_rcl_publisher_message_type_equals_rcl_target_message_type = (rcl_publisher_msgs_type.find(rcl_target_msgs_type) != std::string::npos);
+
+    return is_rcl_publisher_message_type_equals_rcl_target_message_type;
 }
 
 /**
@@ -391,18 +434,22 @@ void ros2_mqtt_bridge::RCLMQTTBridgeManager::bridge_rcl_to_mqtt() {
 
             for(rcl_current_publishers_map_iterator;rcl_current_publishers_map_iterator != rcl_current_publishers_map.end(); ++rcl_current_publishers_map_iterator) {
                 const char * rcl_publisher_topic = rcl_current_publishers_map_iterator->first.c_str();
-                const std::string & rcl_publisher_type = rcl_current_publishers_map_iterator->second;
+                const std::string & rcl_publisher_msgs_type = rcl_current_publishers_map_iterator->second;
 
                 RCLCPP_INFO(
                     rcl_node_ptr_->get_logger(),
                     "RCL current publisher status\n\ttopic : [%s]\n\ttype : [%s]",
                     rcl_publisher_topic,
-                    rcl_publisher_type.c_str()
+                    rcl_publisher_msgs_type.c_str()
                 );
                 RCLCPP_LINE_INFO();
                 
-                if(rcl_publisher_type.find(RCL_STD_MSGS_TYPE) != std::string::npos) {
-                    bool is_rcl_chatter_publisher = (strcmp(rcl_publisher_topic, RCL_CHATTER_TOPIC) == 0);
+                bool is_rcl_std_msgs_type = this->bridge_rcl_to_mqtt_msgs_type_cmp(rcl_publisher_msgs_type, RCL_STD_MSGS_TYPE);
+                bool is_rcl_nav_msgs_type = this->bridge_rcl_to_mqtt_msgs_type_cmp(rcl_publisher_msgs_type, RCL_NAV_MSGS_TYPE);
+                bool is_rcl_geometry_msgs_type = this->bridge_rcl_to_mqtt_msgs_type_cmp(rcl_publisher_msgs_type, RCL_GEOMETRY_MSGS_TYPE);
+
+                if(is_rcl_std_msgs_type) {
+                    bool is_rcl_chatter_publisher = this->bridge_rcl_to_mqtt_topic_cmp(rcl_publisher_topic, RCL_CHATTER_TOPIC);
 
                     RCLCPP_INFO(rcl_node_ptr_->get_logger(), "RCL publisher is [%s] publisher : [%d]", RCL_CHATTER_TOPIC, is_rcl_chatter_publisher);
                     RCLCPP_LINE_INFO();
@@ -423,14 +470,31 @@ void ros2_mqtt_bridge::RCLMQTTBridgeManager::bridge_rcl_to_mqtt() {
                     } else {
                         RCLCPP_LINE_INFO();
                     }
-                } else if(rcl_publisher_type.find(RCL_NAV_MSGS_TYPE) != std::string::npos) {
-                    if(rcl_publisher_topic == RCL_ODOM_TOPIC) {
+                } else if(is_rcl_nav_msgs_type) {
+                    bool is_rcl_map_publisher = this->bridge_rcl_to_mqtt_topic_cmp(rcl_publisher_topic, RCL_MAP_TOPIC);
+                    bool is_rcl_odom_publisher = this->bridge_rcl_to_mqtt_topic_cmp(rcl_publisher_topic, RCL_ODOM_TOPIC);
+
+                    if(is_rcl_map_publisher) {
+                        using rcl_message_type_t = nav_msgs::msg::OccupancyGrid;
+
+                        std::function<void(std::shared_ptr<rcl_message_type_t>)> rcl_map_callback = [this, rcl_publisher_topic](const nav_msgs::msg::OccupancyGrid::SharedPtr rcl_map_callback_data_ptr) {
+                            const std::string & occupancy_grid_json_string = this->rcl_nav_msgs_converter_ptr_->occupancy_grid_to_json_string(rcl_map_callback_data_ptr);
+                            RCLCPP_INFO(rcl_node_ptr_->get_logger(), "RCL [%s] subscription callback : [%s]", rcl_publisher_topic, occupancy_grid_json_string);
+                            RCLCPP_LINE_INFO();
+                            this->mqtt_publish(rcl_publisher_topic, occupancy_grid_json_string);
+                        };
+
+                        rcl_map_subscription_ptr_ = rcl_connection_manager_ptr_->register_subscription<rcl_message_type_t>(rcl_node_ptr_, rcl_publisher_topic, rcl_map_callback);
+                    } else if(is_rcl_odom_publisher) {
                         using rcl_message_type_t = nav_msgs::msg::Odometry;
 
                         std::function<void(std::shared_ptr<rcl_message_type_t>)> rcl_odom_callback = [this, rcl_publisher_topic](const nav_msgs::msg::Odometry::SharedPtr rcl_odom_callback_data_ptr) {
+                            const std::string & odometry_json_string = this->rcl_nav_msgs_converter_ptr_->odometry_to_json_string(rcl_odom_callback_data_ptr);
                             RCLCPP_INFO(rcl_node_ptr_->get_logger(), "RCL [%s] subscription callback : [%s]", rcl_publisher_topic, rcl_odom_callback_data_ptr->child_frame_id);
                             RCLCPP_LINE_INFO();
                         };
+
+                        rcl_odom_subscription_ptr_ = rcl_connection_manager_ptr_->register_subscription<rcl_message_type_t>(rcl_node_ptr_, rcl_publisher_topic, rcl_odom_callback);
                     }
                 }
             }
