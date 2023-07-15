@@ -1624,7 +1624,7 @@ namespace ros2_mqtt_bridge {
              * @param rcl_odometry_ptr target nav_msgs::msg::Odometry::SharedPtr
              * @return odometry_json_string const std::string &
             */
-            inline const std::string & odometry_to_json(const nav_msgs::msg::Odometry::SharedPtr rcl_odometry_ptr) {
+            inline const std::string & odometry_to_json_string(const nav_msgs::msg::Odometry::SharedPtr rcl_odometry_ptr) {
                 Json::Value odometry_json;
 
                 try {
@@ -1706,7 +1706,7 @@ namespace ros2_mqtt_bridge {
              * @param rcl_occupancy_grid_ptr target nav_msgs::msg::OccupancyGrid::SharedPtr
              * @return occupancy_grid_json_string const std::string &
             */
-            inline const std::string & occupancy_grid_to_json(const nav_msgs::msg::OccupancyGrid::SharedPtr rcl_occupancy_grid_ptr) {
+            inline const std::string & occupancy_grid_to_json_string(const nav_msgs::msg::OccupancyGrid::SharedPtr rcl_occupancy_grid_ptr) {
                 Json::Value occupancy_grid_json;
 
                 try {

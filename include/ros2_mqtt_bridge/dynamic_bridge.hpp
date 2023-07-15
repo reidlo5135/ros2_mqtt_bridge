@@ -68,6 +68,36 @@ namespace ros2_mqtt_bridge {
              * @see ros2_mqtt_bridge::StdMessageConverter
             */
             std::shared_ptr<ros2_mqtt_bridge::StdMessageConverter> rcl_std_msgs_converter_ptr_;
+
+            /**
+             * @brief shared pointer for ros2_mqtt_bridge::StdMessageConverter
+             * @see ros2_mqtt_bridge::StdMessageConverter
+            */
+            std::shared_ptr<ros2_mqtt_bridge::GeometryMessageConverter> rcl_geometry_msgs_converter_ptr_;
+
+            /**
+             * @brief shared pointer for ros2_mqtt_bridge::StdMessageConverter
+             * @see ros2_mqtt_bridge::StdMessageConverter
+            */
+            std::shared_ptr<ros2_mqtt_bridge::SensorMessageConverter> rcl_sensor_msgs_converter_ptr_;
+
+            /**
+             * @brief shared pointer for ros2_mqtt_bridge::NavMessageConverter
+             * @see ros2_mqtt_bridge::NavMessageConverter
+            */
+            std::shared_ptr<ros2_mqtt_bridge::NavMessageConverter> rcl_nav_msgs_converter_ptr_;
+
+            /**
+             * @brief shared pointer for ros2_mqtt_bridge::StdMessageConverter
+             * @see ros2_mqtt_bridge::StdMessageConverter
+            */
+            std::shared_ptr<ros2_mqtt_bridge::TFMessageConverter> rcl_tf_msgs_converter_ptr_;
+
+            /**
+             * @brief shared pointer for ros2_mqtt_bridge::StdMessageConverter
+             * @see ros2_mqtt_bridge::StdMessageConverter
+            */
+            std::shared_ptr<ros2_mqtt_bridge::NavigateToPoseActionConverter> rcl_navigate_to_pose_action_converter_ptr_;
             
             /**
              * @brief Shared Pointer for rclcpp::Publisher(topic : /chatter)
@@ -80,9 +110,44 @@ namespace ros2_mqtt_bridge {
             rclcpp::Subscription<std_msgs::msg::String>::SharedPtr rcl_chatter_subscription_ptr_;
 
             /**
+             * @brief Shared Pointer for rclcpp::Subscription(topic : /map)
+            */
+            rclcpp::Subscription<nav_msgs::msg::OccupancyGrid>::SharedPtr rcl_map_subscription_ptr_;
+
+            /**
+             * @brief Shared Pointer for rclcpp::Subscription(topic : /robot_pose)
+            */
+            rclcpp::Subscription<geometry_msgs::msg::Pose>::SharedPtr rcl_robot_pose_subscription_ptr_;
+
+            /**
+             * @brief Shared Pointer for rclcpp::Subscription(topic : /scan)
+            */
+            rclcpp::Subscription<sensor_msgs::msg::LaserScan>::SharedPtr rcl_scan_subscription_ptr_;
+
+            /**
+             * @brief Shared Pointer for rclcpp::Subscription(topic : /tf)
+            */
+            rclcpp::Subscription<tf2_msgs::msg::TFMessage>::SharedPtr rcl_tf_subscription_ptr_;
+
+            /**
+             * @brief Shared Pointer for rclcpp::Subscription(topic : /tf_static)
+            */
+            rclcpp::Subscription<tf2_msgs::msg::TFMessage>::SharedPtr rcl_tf_static_subscription_ptr_;
+
+            /**
+             * @brief Shared Pointer for rclcpp::Publisher(topic : /cmd_vel)
+            */
+            rclcpp::Publisher<geometry_msgs::msg::Twist>::SharedPtr rcl_cmd_vel_publisher_ptr_;
+
+            /**
              * @brief Shared Pointer for rclcpp::Subscription(topic : /odom)
             */
             rclcpp::Subscription<nav_msgs::msg::Odometry>::SharedPtr rcl_odom_subscription_ptr_;
+
+            /**
+             * @brief Shared Pointer for rclcpp::Subscription(topic : /ublox_fix)
+            */
+            rclcpp::Subscription<sensor_msgs::msg::NavSatFix>::SharedPtr rcl_ublox_fix_subscription_ptr_;
 
             /**
              * @brief Shared Pointer for rclcpp::Subscription(topic : /imu/data)
@@ -120,6 +185,30 @@ namespace ros2_mqtt_bridge {
              * @return void
             */
             void delivery_complete(mqtt::delivery_token_ptr mqtt_delivered_token) override;
+
+            /**
+            * @brief function for compare MQTT topic and RCL topic before bridge MQTT to RCL
+            * @param mqtt_topic target MQTT topic
+            * @param rcl_topic target RCL topic
+            * @return is_mqtt_topic_equals_rcl_topic bool
+            */
+            bool bridge_mqtt_to_rcl_topic_cmp(const std::string & mqtt_topic, const char * rcl_topic);
+
+            /**
+             * @brief function for compare RCL publisher's topic and RCL target topic before bridge RCL to MQTT
+             * @param rcl_publisher_topic target RCL publisher topic const char *
+             * @param rcl_target_topic target RCL publisher topic const char *
+             * @return is_rcl_publisher_topic_equals_rcl_target_topic bool
+            */
+            bool bridge_rcl_to_mqtt_topic_cmp(const char * rcl_publisher_topic, const char * rcl_target_topic);
+
+            /**
+             * @brief function for compare RCL publisher's message type and RCL target message type before bridge RCL to MQTT
+             * @param rcl_publisher_msgs_type target RCL publisher's message type const std::string &
+             * @param rcl_target_msgs_type target RCL message type const char *
+             * @return is_rcl_publisher_message_type_equals_rcl_target_message_type bool
+            */
+            bool bridge_rcl_to_mqtt_msgs_type_cmp(const std::string & rcl_publisher_msgs_type, const char * rcl_target_msgs_type);
         public :
             /**
              * Create a new this class' instance

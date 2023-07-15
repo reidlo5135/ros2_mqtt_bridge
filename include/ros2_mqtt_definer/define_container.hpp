@@ -189,19 +189,70 @@ static constexpr const char * RCL_ROSOUT_TOPIC = "/rosout";
 static constexpr const char * RCL_CHATTER_TOPIC = "/chatter";
 
 /**
+ * @brief static const instance for define topic(topic : /map)
+*/
+static constexpr const char * RCL_MAP_TOPIC = "/map";
+
+/**
+ * @brief static const instance for define topic(topic : /robot_pose)
+*/
+static constexpr const char * RCL_ROBOT_POSE_TOPIC = "/robot_pose";
+
+/**
+ * @brief static const instance for define topic(topic : /scan)
+*/
+static constexpr const char * RCL_SCAN_TOPIC = "/scan";
+
+/**
+ * @brief static const instance for define topic(topic : /tf)
+*/
+static constexpr const char * RCL_TF_TOPIC = "/tf";
+
+/**
+ * @brief static const instance for define topic(topic : /tf_static)
+*/
+static constexpr const char * RCL_TF_STATIC_TOPIC = "/tf_static";
+
+/**
+ * @brief static const instance for define topic(topic : /cmd_vel)
+*/
+static constexpr const char * RCL_CMD_VEL_TOPIC = "/cmd_vel";
+
+/**
  * @brief static const instance for define topic(topic : /odom)
 */
 static constexpr const char * RCL_ODOM_TOPIC = "/odom";
+
+/**
+ * @brief static const instance for define topic(topic : /can/control_hardware)
+*/
+static constexpr const char * RCL_CAN_CONTROL_HARDWARE_TOPIC = "/can/control_hardware";
+
+/**
+ * @brief static const instance for define topic(topic : /ublox_fix)
+*/
+static constexpr const char * RCL_UBLOX_FIX_TOPIC = "/ublox_fix";
+
+/**
+ * @brief static const instance for define topic(topic : /gps_manual_move/request)
+*/
+static constexpr const char * RCL_GPS_MANUAL_MOVE_REQUEST_TOPIC = "/gps_manual_move/request";
+
+/**
+ * @brief static const instance for define topic(topic : /gps_manual_move/feedback)
+*/
+static constexpr const char * RCL_GPS_MANUAL_MOVE_FEEDBACK_TOPIC = "/gps_manual_move/feedback";
+
+/**
+ * @brief static const instance for define topic(topic : /gps_manual_move/response)
+*/
+static constexpr const char * RCL_GPS_MANUAL_MOVE_RESPONSE_TOPIC = "/gps_manual_move/response";
 
 /**
  * @brief static const instance for define topic(topic : /imu/data)
 */
 static constexpr const char * RCL_IMU_DATA_TOPIC = "/imu/data";
 
-/**
- * @brief static const instance for define topic(topic : /scan)
-*/
-static constexpr const char * RCL_SCAN_TOPIC = "/scan";
 
 /**
  * ------------------------------------------------------
