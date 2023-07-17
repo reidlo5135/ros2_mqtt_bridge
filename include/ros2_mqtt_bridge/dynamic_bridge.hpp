@@ -88,16 +88,22 @@ namespace ros2_mqtt_bridge {
             std::shared_ptr<ros2_mqtt_bridge::NavMessageConverter> rcl_nav_msgs_converter_ptr_;
 
             /**
-             * @brief shared pointer for ros2_mqtt_bridge::StdMessageConverter
-             * @see ros2_mqtt_bridge::StdMessageConverter
+             * @brief shared pointer for ros2_mqtt_bridge::TFMessageConverter
+             * @see ros2_mqtt_bridge::TFMessageConverter
             */
             std::shared_ptr<ros2_mqtt_bridge::TFMessageConverter> rcl_tf_msgs_converter_ptr_;
 
             /**
-             * @brief shared pointer for ros2_mqtt_bridge::StdMessageConverter
-             * @see ros2_mqtt_bridge::StdMessageConverter
+             * @brief shared pointer for ros2_mqtt_bridge::NavigateToPoseActionConverter
+             * @see ros2_mqtt_bridge::NavigateToPoseActionConverter
             */
             std::shared_ptr<ros2_mqtt_bridge::NavigateToPoseActionConverter> rcl_navigate_to_pose_action_converter_ptr_;
+
+            /**
+             * @brief shared pointer for ros2_mqtt_bridge::CanMessageConverter
+             * @see ros2_mqtt_bridge::CanMessageConverter
+            */
+            std::shared_ptr<ros2_mqtt_bridge::CanMessageConverter> rcl_can_msgs_converter_ptr_;
             
             /**
              * @brief Shared Pointer for rclcpp::Publisher(topic : /chatter)
@@ -140,9 +146,19 @@ namespace ros2_mqtt_bridge {
             rclcpp::Publisher<geometry_msgs::msg::Twist>::SharedPtr rcl_cmd_vel_publisher_ptr_;
 
             /**
+             * @brief Shared Pointer for rclcpp::Subscription(topic : /cmd_vel)
+            */
+            rclcpp::Subscription<geometry_msgs::msg::Twist>::SharedPtr rcl_cmd_vel_subscription_ptr_;
+
+            /**
              * @brief Shared Pointer for rclcpp::Subscription(topic : /odom)
             */
             rclcpp::Subscription<nav_msgs::msg::Odometry>::SharedPtr rcl_odom_subscription_ptr_;
+
+            /**
+             * @brief Shared Pointer for rclcpp::Publisher(topic : /can/control_hardware)
+            */
+            rclcpp::Publisher<can_msgs::msg::ControlHardware>::SharedPtr rcl_can_control_hardware_publisher_ptr_;
 
             /**
              * @brief Shared Pointer for rclcpp::Subscription(topic : /ublox_fix)

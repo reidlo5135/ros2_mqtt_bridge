@@ -1999,6 +1999,85 @@ namespace ros2_mqtt_bridge {
                 return navigate_to_pose_feedback_json_string;
             };
     };
+
+    /**
+     * @class CanMessageConverter
+     * @brief final class for implements converting functions between can_msgs - Json::Value
+    */
+    class CanMessageConverter final {
+        public :
+            /**
+             * Create a new this class' instance
+             * @brief Default Constructor
+            */
+            inline explicit CanMessageConverter() {
+
+            };
+
+            /**
+             * Destroy this class' instance
+             * @brief Default Destructor
+            */
+            inline virtual ~CanMessageConverter() {
+                
+            };
+
+            /**
+             * @brief inline function for convert json styled string into can_msgs::msg::ControlHardware::UniquePtr
+             * @param raw_can_control_hard_ware_json_string target const std::string &
+             * @return rcl_can_control_hardware_ptr can_msgs::msg::ControlHardware::UniquePtr
+            */
+            inline can_msgs::msg::ControlHardware::UniquePtr json_to_can_control_hardware(const std::string & raw_can_control_hardware_json_string) {
+                Json::Value can_control_hardware_json;
+                Json::Reader json_reader;
+                can_msgs::msg::ControlHardware::UniquePtr rcl_can_control_hardware_ptr = std::make_unique<can_msgs::msg::ControlHardware>();
+
+                try {
+                    bool is_can_control_hardware_parsing_succeeded = json_reader.parse(raw_can_control_hardware_json_string, can_control_hardware_json);
+
+                    if(is_can_control_hardware_parsing_succeeded) {
+                        RCUTILS_LOG_INFO_NAMED(
+                            RCL_NODE_NAME,
+                            "parsing can_control_hardware json completed : [%s]",
+                            can_control_hardware_json.asCString()
+                        );
+                        RCLCPP_LINE_INFO();
+
+                        bool can_control_hardware_horn = can_control_hardware_json[RCL_JSON_CAN_CONTROL_HARDWARE_HORN].asBool();
+                        rcl_can_control_hardware_ptr->set__horn(can_control_hardware_horn);
+
+                        bool can_control_hardware_head_light = can_control_hardware_json[RCL_JSON_CAN_CONTROL_HARDWARE_HEAD_LIGHT].asBool();
+                        rcl_can_control_hardware_ptr->set__head_light(can_control_hardware_head_light);
+
+                        bool can_control_hardware_left_light = can_control_hardware_json[RCL_JSON_CAN_CONTROL_HARDWARE_LEFT_LIGHT].asBool();
+                        rcl_can_control_hardware_ptr->set__left_light(can_control_hardware_left_light);
+
+                        bool can_control_hardware_right_light = can_control_hardware_json[RCL_JSON_CAN_CONTROL_HARDWARE_RIGHT_LIGHT].asBool();
+                        rcl_can_control_hardware_ptr->set__right_light(can_control_hardware_right_light);
+                    } else {
+                        const std::string & json_formatted_error_message = json_reader.getFormatedErrorMessages();
+
+                        RCUTILS_LOG_ERROR_NAMED(
+                            RCL_NODE_NAME,
+                            "parsing can_control_hardware json error : %s",
+                            json_formatted_error_message.c_str()
+                        );
+                        RCLCPP_LINE_ERROR();
+                    }
+                } catch(const Json::Exception & json_expn) {
+                    RCUTILS_LOG_ERROR_NAMED(
+                        RCL_NODE_NAME,
+                        "error occurred during convert [%s%s] to can_msgs::msg::ControlHardWare\n\twith : [%s]",
+                        RCL_CAN_MSGS_TYPE,
+                        RCL_JSON_CAN_CONTROL_HARDWARE_FLAG,
+                        json_expn.what()
+                    );
+                    RCLCPP_LINE_ERROR();
+                }
+
+                return rcl_can_control_hardware_ptr;
+            };
+    };
 }
 
 #endif

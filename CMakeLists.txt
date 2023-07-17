@@ -28,6 +28,7 @@ find_package(nav2_msgs REQUIRED)
 find_package(sensor_msgs REQUIRED)
 find_package(geometry_msgs REQUIRED)
 find_package(tf2_msgs REQUIRED)
+find_package(can_msgs REQUIRED)
 find_package(builtin_interfaces REQUIRED)
 find_package(jsoncpp REQUIRED)
 find_library(PAHO_MQTT_CPP_LIB paho-mqttpp3 PATHS /usr/local/lib REQUIRED)
@@ -47,6 +48,8 @@ ament_target_dependencies(
   nav_msgs
   sensor_msgs
   geometry_msgs
+  tf2_msgs
+  can_msgs
 )
 
 target_link_libraries(

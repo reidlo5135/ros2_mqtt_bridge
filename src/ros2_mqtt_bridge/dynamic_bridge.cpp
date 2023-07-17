@@ -43,6 +43,7 @@ mqtt_async_client_(MQTT_ADDRESS, MQTT_CLIENT_ID) {
     rcl_nav_msgs_converter_ptr_ = std::make_shared<ros2_mqtt_bridge::NavMessageConverter>();
     rcl_tf_msgs_converter_ptr_ = std::make_shared<ros2_mqtt_bridge::TFMessageConverter>();
     rcl_navigate_to_pose_action_converter_ptr_ = std::make_shared<ros2_mqtt_bridge::NavigateToPoseActionConverter>();
+    rcl_can_msgs_converter_ptr_ = std::make_shared<ros2_mqtt_bridge::CanMessageConverter>();
 
     /**
      * invoke for establish MQTT connection
@@ -447,6 +448,9 @@ void ros2_mqtt_bridge::RCLMQTTBridgeManager::bridge_rcl_to_mqtt() {
                 bool is_rcl_std_msgs_type = this->bridge_rcl_to_mqtt_msgs_type_cmp(rcl_publisher_msgs_type, RCL_STD_MSGS_TYPE);
                 bool is_rcl_nav_msgs_type = this->bridge_rcl_to_mqtt_msgs_type_cmp(rcl_publisher_msgs_type, RCL_NAV_MSGS_TYPE);
                 bool is_rcl_geometry_msgs_type = this->bridge_rcl_to_mqtt_msgs_type_cmp(rcl_publisher_msgs_type, RCL_GEOMETRY_MSGS_TYPE);
+                bool is_rcl_sensor_msgs_type = this->bridge_rcl_to_mqtt_msgs_type_cmp(rcl_publisher_msgs_type, RCL_SENSOR_MSGS_TYPE);
+                bool is_rcl_tf2_msgs_type = this->bridge_rcl_to_mqtt_msgs_type_cmp(rcl_publisher_msgs_type, RCL_TF2_MSGS_TYPE);
+                bool is_rcl_can_msgs_type = this->bridge_rcl_to_mqtt_msgs_type_cmp(rcl_publisher_msgs_type, RCL_CAN_MSGS_TYPE);
 
                 if(is_rcl_std_msgs_type) {
                     bool is_rcl_chatter_publisher = this->bridge_rcl_to_mqtt_topic_cmp(rcl_publisher_topic, RCL_CHATTER_TOPIC);
@@ -468,7 +472,8 @@ void ros2_mqtt_bridge::RCLMQTTBridgeManager::bridge_rcl_to_mqtt() {
 
                         rcl_chatter_subscription_ptr_ = rcl_connection_manager_ptr_->register_subscription<rcl_message_type_t>(rcl_node_ptr_, rcl_publisher_topic, rcl_chatter_callback);
                     } else {
-                        RCLCPP_LINE_INFO();
+                        RCLCPP_ERROR(rcl_node_ptr_->get_logger(), "RCL [%s] publishers ended");
+                        RCLCPP_LINE_ERROR();
                     }
                 } else if(is_rcl_nav_msgs_type) {
                     bool is_rcl_map_publisher = this->bridge_rcl_to_mqtt_topic_cmp(rcl_publisher_topic, RCL_MAP_TOPIC);
@@ -479,7 +484,7 @@ void ros2_mqtt_bridge::RCLMQTTBridgeManager::bridge_rcl_to_mqtt() {
 
                         std::function<void(std::shared_ptr<rcl_message_type_t>)> rcl_map_callback = [this, rcl_publisher_topic](const nav_msgs::msg::OccupancyGrid::SharedPtr rcl_map_callback_data_ptr) {
                             const std::string & occupancy_grid_json_string = this->rcl_nav_msgs_converter_ptr_->occupancy_grid_to_json_string(rcl_map_callback_data_ptr);
-                            RCLCPP_INFO(rcl_node_ptr_->get_logger(), "RCL [%s] subscription callback : [%s]", rcl_publisher_topic, occupancy_grid_json_string);
+                            RCLCPP_INFO(rcl_node_ptr_->get_logger(), "RCL [%s] subscription callback : [%s]", rcl_publisher_topic, occupancy_grid_json_string.c_str());
                             RCLCPP_LINE_INFO();
                             this->mqtt_publish(rcl_publisher_topic, occupancy_grid_json_string);
                         };
@@ -490,12 +495,109 @@ void ros2_mqtt_bridge::RCLMQTTBridgeManager::bridge_rcl_to_mqtt() {
 
                         std::function<void(std::shared_ptr<rcl_message_type_t>)> rcl_odom_callback = [this, rcl_publisher_topic](const nav_msgs::msg::Odometry::SharedPtr rcl_odom_callback_data_ptr) {
                             const std::string & odometry_json_string = this->rcl_nav_msgs_converter_ptr_->odometry_to_json_string(rcl_odom_callback_data_ptr);
-                            RCLCPP_INFO(rcl_node_ptr_->get_logger(), "RCL [%s] subscription callback : [%s]", rcl_publisher_topic, rcl_odom_callback_data_ptr->child_frame_id);
+                            RCLCPP_INFO(rcl_node_ptr_->get_logger(), "RCL [%s] subscription callback : [%s]", rcl_publisher_topic, odometry_json_string.c_str());
                             RCLCPP_LINE_INFO();
+                            this->mqtt_publish(rcl_publisher_topic, odometry_json_string);
                         };
 
                         rcl_odom_subscription_ptr_ = rcl_connection_manager_ptr_->register_subscription<rcl_message_type_t>(rcl_node_ptr_, rcl_publisher_topic, rcl_odom_callback);
+                    } else {
+                        RCLCPP_ERROR(rcl_node_ptr_->get_logger(), "RCL [%s] publishers ended");
+                        RCLCPP_LINE_ERROR();
                     }
+                } else if(is_rcl_sensor_msgs_type) {
+                    bool is_rcl_scan_publisher = this->bridge_rcl_to_mqtt_topic_cmp(rcl_publisher_topic, RCL_SCAN_TOPIC);
+                    bool is_rcl_ublox_fix_publisher = this->bridge_mqtt_to_rcl_topic_cmp(rcl_publisher_topic, RCL_UBLOX_FIX_TOPIC);
+
+                    if(is_rcl_scan_publisher) {
+                        using rcl_message_type_t = sensor_msgs::msg::LaserScan;
+
+                        std::function<void(std::shared_ptr<rcl_message_type_t>)> rcl_scan_callback = [this, rcl_publisher_topic](const sensor_msgs::msg::LaserScan::SharedPtr rcl_scan_callback_data_ptr) {
+                            const std::string & scan_json_string = this->rcl_sensor_msgs_converter_ptr_->laser_scan_to_json_string(rcl_scan_callback_data_ptr);
+                            RCLCPP_INFO(rcl_node_ptr_->get_logger(), "RCL [%s] subscription callback : [%s]", rcl_publisher_topic, scan_json_string.c_str());
+                            RCLCPP_LINE_INFO();
+                            this->mqtt_publish(rcl_publisher_topic, scan_json_string);
+                        };
+
+                        rcl_scan_subscription_ptr_ = rcl_connection_manager_ptr_->register_subscription<rcl_message_type_t>(rcl_node_ptr_, rcl_publisher_topic, rcl_scan_callback);
+                    } else if(is_rcl_ublox_fix_publisher) {
+                        using rcl_message_type_t = sensor_msgs::msg::NavSatFix;
+
+                        std::function<void(std::shared_ptr<rcl_message_type_t>)> rcl_ublox_fix_callback = [this, rcl_publisher_topic](const sensor_msgs::msg::NavSatFix::SharedPtr rcl_ublox_fix_callback_data_ptr) {
+                            const std::string & ublox_fix_json_string = this->rcl_sensor_msgs_converter_ptr_->nav_sat_fix_to_json_string(rcl_ublox_fix_callback_data_ptr);
+                            RCLCPP_INFO(rcl_node_ptr_->get_logger(), "RCL [%s] subscription callback : [%s]", rcl_publisher_topic, ublox_fix_json_string.c_str());
+                            RCLCPP_LINE_INFO();
+                            this->mqtt_publish(rcl_publisher_topic, ublox_fix_json_string);
+                        };
+
+                        rcl_ublox_fix_subscription_ptr_ = rcl_connection_manager_ptr_->register_subscription<rcl_message_type_t>(rcl_node_ptr_, rcl_publisher_topic, rcl_ublox_fix_callback);
+                    } else {
+                        RCLCPP_ERROR(rcl_node_ptr_->get_logger(), "RCL [%s] publishers ended");
+                        RCLCPP_LINE_ERROR();
+                    }
+                } else if(is_rcl_tf2_msgs_type) {
+                    bool is_rcl_tf_publisher = this->bridge_rcl_to_mqtt_topic_cmp(rcl_publisher_topic, RCL_TF_TOPIC);
+                    bool is_rcl_tf_static_publisher = this->bridge_rcl_to_mqtt_topic_cmp(rcl_publisher_topic, RCL_TF_STATIC_TOPIC);
+
+                    if(is_rcl_tf_publisher) {
+                        using rcl_message_type_t = tf2_msgs::msg::TFMessage;
+
+                        std::function<void(std::shared_ptr<rcl_message_type_t>)> rcl_tf_callback = [this, rcl_publisher_topic](const tf2_msgs::msg::TFMessage::SharedPtr rcl_tf_callback_data_ptr) {
+                            const std::string & tf_json_string = this->rcl_tf_msgs_converter_ptr_->tf_message_to_json_string(rcl_tf_callback_data_ptr);
+                            RCLCPP_INFO(rcl_node_ptr_->get_logger(), "RCL [%s] subscription callback : [%s]", rcl_publisher_topic, tf_json_string.c_str());
+                            RCLCPP_LINE_INFO();
+                            this->mqtt_publish(rcl_publisher_topic, tf_json_string);
+                        };
+
+                        rcl_tf_subscription_ptr_ = rcl_connection_manager_ptr_->register_subscription<rcl_message_type_t>(rcl_node_ptr_, rcl_publisher_topic, rcl_tf_callback);
+                    } else if(is_rcl_tf_static_publisher) {
+                        using rcl_message_type_t = tf2_msgs::msg::TFMessage;
+
+                        std::function<void(std::shared_ptr<rcl_message_type_t>)> rcl_tf_static_callback = [this, rcl_publisher_topic](const tf2_msgs::msg::TFMessage::SharedPtr rcl_tf_static_callback_data_ptr) {
+                            const std::string & tf_static_json_string = this->rcl_tf_msgs_converter_ptr_->tf_message_to_json_string(rcl_tf_static_callback_data_ptr);
+                            RCLCPP_INFO(rcl_node_ptr_->get_logger(), "RCL [%s] subscription callback : [%s]", rcl_publisher_topic, tf_static_json_string.c_str());
+                            RCLCPP_LINE_INFO();
+                            this->mqtt_publish(rcl_publisher_topic, tf_static_json_string);
+                        };
+
+                        rcl_tf_subscription_ptr_ = rcl_connection_manager_ptr_->register_subscription<rcl_message_type_t>(rcl_node_ptr_, rcl_publisher_topic, rcl_tf_static_callback);
+                    } else {
+                        RCLCPP_ERROR(rcl_node_ptr_->get_logger(), "RCL [%s] publishers ended");
+                        RCLCPP_LINE_ERROR();
+                    }
+                } else if(is_rcl_geometry_msgs_type) {
+                    bool is_rcl_robot_pose_publisher = this->bridge_rcl_to_mqtt_topic_cmp(rcl_publisher_topic, RCL_ROBOT_POSE_TOPIC);
+                    bool is_rcl_cmd_vel_publisher = this->bridge_rcl_to_mqtt_topic_cmp(rcl_publisher_topic, RCL_CMD_VEL_TOPIC);
+
+                    if(is_rcl_robot_pose_publisher) {
+                        using rcl_message_type_t = geometry_msgs::msg::Pose;
+
+                        std::function<void(std::shared_ptr<rcl_message_type_t>)> rcl_robot_pose_callback = [this, rcl_publisher_topic](const geometry_msgs::msg::Pose::SharedPtr rcl_robot_pose_callback_data_ptr) {
+                            const std::string & robot_pose_json_string = this->rcl_geometry_msgs_converter_ptr_->pose_to_json_string(rcl_robot_pose_callback_data_ptr);
+                            RCLCPP_INFO(rcl_node_ptr_->get_logger(), "RCL [%s] subscription callback : [%s]", rcl_publisher_topic, robot_pose_json_string.c_str());
+                            RCLCPP_LINE_INFO();
+                            this->mqtt_publish(rcl_publisher_topic, robot_pose_json_string);
+                        };
+
+                        rcl_robot_pose_subscription_ptr_ = rcl_connection_manager_ptr_->register_subscription<rcl_message_type_t>(rcl_node_ptr_, rcl_publisher_topic, rcl_robot_pose_callback);
+                    } else if(is_rcl_cmd_vel_publisher) {
+                        using rcl_message_type_t = geometry_msgs::msg::Twist;
+
+                        std::function<void(std::shared_ptr<rcl_message_type_t>)> rcl_cmd_vel_callback = [this, rcl_publisher_topic](const geometry_msgs::msg::Twist::SharedPtr rcl_cmd_vel_callback_data_ptr) {
+                            const std::string & cmd_vel_json_string = this->rcl_geometry_msgs_converter_ptr_->twist_to_json_string(rcl_cmd_vel_callback_data_ptr);
+                            RCLCPP_INFO(rcl_node_ptr_->get_logger(), "RCL [%s] subscription callback : [%s]", rcl_publisher_topic, cmd_vel_json_string.c_str());
+                            RCLCPP_LINE_INFO();
+                            this->mqtt_publish(rcl_publisher_topic, cmd_vel_json_string);
+                        };
+
+                        rcl_cmd_vel_subscription_ptr_ = rcl_connection_manager_ptr_->register_subscription<rcl_message_type_t>(rcl_node_ptr_, rcl_publisher_topic, rcl_cmd_vel_callback);
+                    } else {
+                        RCLCPP_ERROR(rcl_node_ptr_->get_logger(), "RCL [%s] publishers ended");
+                        RCLCPP_LINE_ERROR();
+                    }
+                } else {
+                    RCLCPP_INFO(rcl_node_ptr_->get_logger(), "bridge RCL to MQTT ended..");
+                    RCLCPP_LINE_INFO();
                 }
             }
 
