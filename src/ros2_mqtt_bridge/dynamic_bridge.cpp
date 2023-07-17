@@ -215,41 +215,6 @@ void ros2_mqtt_bridge::RCLMQTTBridgeManager::flag_map(std::map<begin_type, end_t
 }
 
 /**
-* function for foundate MQTT to RCL by grant MQTT subscription with current RCL publishers
-* @param rcl_current_publishers_map target RCL current publishers map
-* @return void
-*/
-void ros2_mqtt_bridge::RCLMQTTBridgeManager::foundate_mqtt_to_rcl(std::map<std::string, std::string> rcl_current_subscriptions_map) {
-    std::map<std::string, std::string>::iterator rcl_current_subscriptions_map_iterator = rcl_current_subscriptions_map.begin();
-
-    for (rcl_current_subscriptions_map_iterator;rcl_current_subscriptions_map_iterator != rcl_current_subscriptions_map.end();++rcl_current_subscriptions_map_iterator) {
-        const char * rcl_subscription_topic = rcl_current_subscriptions_map_iterator->first.c_str();
-        this->mqtt_subscribe(rcl_subscription_topic);
-
-        RCLCPP_INFO(
-            rcl_node_ptr_->get_logger(),
-            "foundate MQTT to RCL topic : [%s]",
-            rcl_subscription_topic
-        );
-        RCLCPP_LINE_INFO();
-
-        if(strcmp(rcl_subscription_topic, RCL_CHATTER_TOPIC) == 0) {
-            rcl_chatter_publisher_ptr_ = rcl_connection_manager_ptr_->register_publisher<std_msgs::msg::String>(
-                rcl_node_ptr_,
-                RCL_CHATTER_TOPIC
-            );
-
-            RCLCPP_INFO(
-                rcl_node_ptr_->get_logger(),
-                "registered [%s] publisher",
-                rcl_subscription_topic
-            );
-            RCLCPP_LINE_INFO();
-        }
-    }
-}
-
-/**
 * @brief function for compare MQTT topic and RCL topic before bridge MQTT to RCL
 * @param mqtt_topic target MQTT topic
 * @param rcl_topic target RCL topic
@@ -261,6 +226,123 @@ bool ros2_mqtt_bridge::RCLMQTTBridgeManager::bridge_mqtt_to_rcl_topic_cmp(const 
     bool is_mqtt_topic_equals_rcl_topic = (strcmp(cmqtt_topic, rcl_topic) == 0);
 
     return is_mqtt_topic_equals_rcl_topic;
+}
+
+/**
+* @brief function for compare MQTT topic and RCL topic before bridge MQTT to RCL
+* @param rcl_subscription_topic target MQTT topic
+* @param rcl_target_topic target RCL topic
+* @return is_rcl_subscription_topic_equals_rcl_target_topic bool
+*/
+bool ros2_mqtt_bridge::RCLMQTTBridgeManager::bridge_mqtt_to_rcl_topic_cmp(const char * rcl_subscription_topic, const char * rcl_target_topic) {
+    bool is_rcl_subscription_topic_equals_rcl_target_topic = (strcmp(rcl_subscription_topic, rcl_target_topic) == 0);
+
+    return is_rcl_subscription_topic_equals_rcl_target_topic;
+}
+
+/**
+* @brief function for compare RCL subscription's message type and RCL target message type before bridge RCL to MQTT
+* @param rcl_subscription_msgs_type target RCL subscription's message type const std::string &
+* @param rcl_target_msgs_type target RCL message type const std::string &
+* @return is_rcl_subscription_message_type_equals_rcl_target_message_type bool
+*/
+bool ros2_mqtt_bridge::RCLMQTTBridgeManager::bridge_mqtt_to_rcl_msgs_type_cmp(const std::string & rcl_subscription_msgs_type, const char * rcl_target_msgs_type) {
+    bool is_rcl_subscription_message_type_equals_rcl_target_message_type = (rcl_subscription_msgs_type.find(rcl_target_msgs_type) != std::string::npos);
+
+    return is_rcl_subscription_message_type_equals_rcl_target_message_type;
+}
+
+/**
+ * @brief function for flag and log foudate MQTT to RCL
+ * @param rcl_subscription_topic target RCL subscription topic const char *
+ * @param rcl_subscription_msgs_type target RCL subscription message type const std::string &
+ * @return void
+*/
+void ros2_mqtt_bridge::RCLMQTTBridgeManager::flag_foundate_mqtt_to_rcl(const char * rcl_subscription_topic, const std::string & rcl_subscription_msgs_type) {
+    RCLCPP_INFO(
+        rcl_node_ptr_->get_logger(),
+        "registered [%s] publisher with type : [%s]",
+        rcl_subscription_topic,
+        rcl_subscription_msgs_type.c_str()
+    );
+    RCLCPP_LINE_INFO();
+}
+
+/**
+* @brief function for foundate MQTT to RCL by grant MQTT subscription with current RCL publishers
+* @param rcl_current_publishers_map target RCL current publishers map
+* @return void
+*/
+void ros2_mqtt_bridge::RCLMQTTBridgeManager::foundate_mqtt_to_rcl(std::map<std::string, std::string> rcl_current_subscriptions_map) {
+    std::map<std::string, std::string>::iterator rcl_current_subscriptions_map_iterator = rcl_current_subscriptions_map.begin();
+
+    for (rcl_current_subscriptions_map_iterator;rcl_current_subscriptions_map_iterator != rcl_current_subscriptions_map.end();++rcl_current_subscriptions_map_iterator) {
+        const char * rcl_subscription_topic = rcl_current_subscriptions_map_iterator->first.c_str();
+        const std::string & rcl_subscription_msgs_type = rcl_current_subscriptions_map_iterator->second;
+        this->mqtt_subscribe(rcl_subscription_topic);
+        
+        bool is_rcl_std_msgs_type = this->bridge_mqtt_to_rcl_msgs_type_cmp(rcl_subscription_msgs_type, RCL_STD_MSGS_TYPE);
+        bool is_rcl_geometry_msgs_type = this->bridge_mqtt_to_rcl_msgs_type_cmp(rcl_subscription_msgs_type, RCL_GEOMETRY_MSGS_TYPE);
+        bool is_rcl_can_msgs_type = this->bridge_mqtt_to_rcl_msgs_type_cmp(rcl_subscription_msgs_type, RCL_CAN_MSGS_TYPE);
+
+        if(is_rcl_std_msgs_type) {
+            bool is_rcl_chatter_subscription = this->bridge_mqtt_to_rcl_topic_cmp(rcl_subscription_topic, RCL_CHATTER_TOPIC);
+            
+            if(is_rcl_chatter_subscription) {
+                rcl_chatter_publisher_ptr_ = rcl_connection_manager_ptr_->register_publisher<std_msgs::msg::String>(
+                    rcl_node_ptr_,
+                    RCL_CHATTER_TOPIC
+                );
+
+                this->flag_foundate_mqtt_to_rcl(rcl_subscription_topic, rcl_subscription_msgs_type);
+            } else {
+                RCLCPP_ERROR(rcl_node_ptr_->get_logger(), "RCL [%s] subscriptions ended");
+                RCLCPP_LINE_ERROR();
+            }
+        } else if(is_rcl_geometry_msgs_type) {
+            bool is_rcl_cmd_vel_subscription = this->bridge_mqtt_to_rcl_topic_cmp(rcl_subscription_topic, RCL_CMD_VEL_TOPIC);
+
+            if(is_rcl_cmd_vel_subscription) {
+                rcl_cmd_vel_publisher_ptr_ = rcl_connection_manager_ptr_->register_publisher<geometry_msgs::msg::Twist>(
+                    rcl_node_ptr_,
+                    RCL_CMD_VEL_TOPIC
+                );
+
+                this->flag_foundate_mqtt_to_rcl(rcl_subscription_topic, rcl_subscription_msgs_type);
+            } else {
+                RCLCPP_ERROR(rcl_node_ptr_->get_logger(), "RCL [%s] subscriptions ended");
+                RCLCPP_LINE_ERROR();
+            }
+        } else if(is_rcl_can_msgs_type) {
+            bool is_rcl_can_control_hardware_subscription = this->bridge_mqtt_to_rcl_topic_cmp(rcl_subscription_topic, RCL_CAN_CONTROL_HARDWARE_TOPIC);
+
+            if(is_rcl_can_control_hardware_subscription) {
+                rcl_can_control_hardware_publisher_ptr_ = rcl_connection_manager_ptr_->register_publisher<can_msgs::msg::ControlHardware>(
+                    rcl_node_ptr_,
+                    RCL_CAN_CONTROL_HARDWARE_TOPIC
+                );
+
+                this->flag_foundate_mqtt_to_rcl(rcl_subscription_topic, rcl_subscription_msgs_type);
+            } else {
+                RCLCPP_ERROR(rcl_node_ptr_->get_logger(), "RCL [%s] subscriptions ended");
+                RCLCPP_LINE_ERROR();
+            }
+        } else {
+            RCLCPP_INFO(rcl_node_ptr_->get_logger(), "foundate MQTT to RCL ended..");
+            RCLCPP_LINE_INFO();
+        }
+    }
+}
+
+/**
+* @brief function for flag and log bridge MQTT to RCL
+* @param mqtt_topic target MQTT topic
+* @param mqtt_payload target MQTT payload
+* @return void
+*/
+void ros2_mqtt_bridge::RCLMQTTBridgeManager::flag_bridge_mqtt_to_rcl(const std::string & mqtt_topic, const std::string & mqtt_payload) {
+    RCLCPP_INFO(rcl_node_ptr_->get_logger(), "bridge MQTT to RCL with\n\ttopic : [%s]\n\tpayload : [%s]", mqtt_topic.c_str(), mqtt_payload.c_str());
+    RCLCPP_LINE_INFO();
 }
 
 /**
@@ -278,12 +360,27 @@ void ros2_mqtt_bridge::RCLMQTTBridgeManager::bridge_mqtt_to_rcl(const std::strin
     );
     RCLCPP_LINE_INFO();
 
-    if(bridge_mqtt_to_rcl_topic_cmp(mqtt_topic, RCL_CHATTER_TOPIC)) {
-        RCLCPP_INFO(rcl_node_ptr_->get_logger(), "bridge MQTT to RCL with\n\ttopic : [%s]\n\tpayload : [%s]", mqtt_topic.c_str(), mqtt_payload.c_str());
-        RCLCPP_LINE_INFO();
+    bool is_mqtt_chatter_publisher = this->bridge_mqtt_to_rcl_topic_cmp(mqtt_topic, RCL_CHATTER_TOPIC);
+    bool is_mqtt_cmd_vel_publisher = this->bridge_mqtt_to_rcl_topic_cmp(mqtt_topic, RCL_CMD_VEL_TOPIC);
+    bool is_mqtt_can_control_hardware_publisher = this->bridge_mqtt_to_rcl_topic_cmp(mqtt_topic, RCL_CAN_CONTROL_HARDWARE_TOPIC);
+
+    if(is_mqtt_chatter_publisher) {
+        this->flag_bridge_mqtt_to_rcl(mqtt_topic, mqtt_payload);
         
         std_msgs::msg::String::UniquePtr rcl_std_msgs_string_ptr = rcl_std_msgs_converter_ptr_->json_to_string(mqtt_payload);
         rcl_chatter_publisher_ptr_->publish(std::move(*rcl_std_msgs_string_ptr));
+    } else if(is_mqtt_cmd_vel_publisher) {
+        this->flag_bridge_mqtt_to_rcl(mqtt_topic, mqtt_payload);
+
+        geometry_msgs::msg::Twist::UniquePtr rcl_geometry_msgs_twist_ptr = rcl_geometry_msgs_converter_ptr_->json_to_twist(mqtt_payload);
+        rcl_cmd_vel_publisher_ptr_->publish(std::move(*rcl_geometry_msgs_twist_ptr));
+    } else if(is_mqtt_can_control_hardware_publisher) {
+        this->flag_bridge_mqtt_to_rcl(mqtt_topic, mqtt_payload);
+
+        can_msgs::msg::ControlHardware::UniquePtr rcl_can_msgs_control_hardware_ptr = rcl_can_msgs_converter_ptr_->json_to_can_control_hardware(mqtt_payload);
+        rcl_can_control_hardware_publisher_ptr_->publish(std::move(*rcl_can_msgs_control_hardware_ptr));
+    } else {
+
     }
 }
 
