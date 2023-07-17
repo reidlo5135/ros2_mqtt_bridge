@@ -34,6 +34,10 @@
 int main(int argc, char** argv) {
     rclcpp::init(argc, argv);
     std::shared_ptr<rclcpp::Node> rcl_node_ptr = std::make_shared<ros2_mqtt_bridge::RCLNode>();
+
+    signal(SIGINT, &ros2_mqtt_bridge::RCLNode::sig_handler);
+    signal(SIGTSTP, &ros2_mqtt_bridge::RCLNode::sig_handler);
+    
     rclcpp::executors::SingleThreadedExecutor rcl_single_thread_executor;
     while(rclcpp::ok()) {
         rcl_single_thread_executor.spin_node_once(rcl_node_ptr);
