@@ -736,7 +736,7 @@ ros2_mqtt_bridge::RCLNode::~RCLNode() {
 * @see signal_input.h
 */
 void ros2_mqtt_bridge::RCLNode::sig_handler(int signal_input) {
-    RCUTILS_LOG_INFO_NAMED(RCL_NODE_NAME, "\n ros2_mqtt_bridge stopped with SIG [%i] \n", signal_input);
+    RCUTILS_LOG_INFO_NAMED(RCL_NODE_NAME, "\nstopped with SIG [%i] \n", signal_input);
 	signal(signal_input, SIG_IGN);
 	exit(RCL_EXIT_FLAG);
 }

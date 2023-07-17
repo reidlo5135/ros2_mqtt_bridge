@@ -58,8 +58,32 @@ target_link_libraries(
   jsoncpp
 )
 
+add_executable(
+  bridge_tester
+  include/ros2_mqtt_definer/define_container.hpp
+  src/ros2_mqtt_bridge/bridge_tester.cpp
+)
+
+ament_target_dependencies(
+  bridge_tester
+  rclcpp
+  std_msgs
+  nav_msgs
+  sensor_msgs
+  geometry_msgs
+  tf2_msgs
+  can_msgs
+)
+
+target_link_libraries(
+  bridge_tester
+  ${PAHO_MQTT_CPP_LIB} -lpaho-mqtt3as
+  jsoncpp
+)
+
 install(TARGETS
   dynamic_bridge
+  bridge_tester
   DESTINATION lib/${PROJECT_NAME}
 )
 

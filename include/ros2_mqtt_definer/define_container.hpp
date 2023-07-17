@@ -100,6 +100,11 @@
 static constexpr const char * RCL_NODE_NAME = "ros2_mqtt_bridge";
 
 /**
+ * @brief static const instance for define name of rclcpp::Node what test "ros2_mqtt_bridge" node
+*/
+static constexpr const char * RCL_TESTER_NODE_NAME = "ros2_mqtt_bridge_tester";
+
+/**
  * @brief static const instance for define default value of rclcpp::QoS
 */
 static constexpr const int & RCL_DEFAULT_QOS = 10;
