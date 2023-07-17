@@ -33,12 +33,6 @@ namespace ros2_mqtt_bridge {
              * @brief Shared Pointer for rclcpp::Node
             */
             rclcpp::Node::SharedPtr rcl_node_ptr_;
-
-            /**
-             * @brief shared pointer for ros2_mqtt_bridge::RCLMQTTBridgeManager
-             * @see ros2_mqtt_bridge::RCLMQTTBridgeManager
-            */
-            std::shared_ptr<ros2_mqtt_bridge::RCLMQTTBridgeManager> rcl_mqtt_bridge_manager_ptr_;
             
             /**
              * @brief shared pointer for ros2_mqtt_bridge::RCLConnectionManager

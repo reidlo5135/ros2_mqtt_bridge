@@ -32,7 +32,6 @@
 ros2_mqtt_bridge::RCLMQTTBridgeTester::RCLMQTTBridgeTester()
 : Node(RCL_TESTER_NODE_NAME) {
     rcl_connection_manager_ptr_ = std::make_shared<ros2_mqtt_bridge::RCLConnectionManager>();
-    rcl_mqtt_bridge_manager_ptr_ = std::make_shared<ros2_mqtt_bridge::RCLMQTTBridgeManager>(rcl_node_ptr_, rcl_connection_manager_ptr_);
 
     rcl_timer_base_ptr_ = rcl_node_ptr_->create_wall_timer(
         std::chrono::milliseconds(500),
@@ -172,7 +171,7 @@ void ros2_mqtt_bridge::RCLMQTTBridgeTester::rcl_publish_ublox_fix() {
 }
 
 void ros2_mqtt_bridge::RCLMQTTBridgeTester::bridge_test_rcl_to_mqtt() {
-    
+    this->rcl_publish_chatter();
 }
 
 /**
