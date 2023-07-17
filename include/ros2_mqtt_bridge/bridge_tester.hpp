@@ -103,6 +103,8 @@ namespace ros2_mqtt_bridge {
 
             std_msgs::msg::Header::UniquePtr rcl_build_std_msgs_header(const char * frame_id);
 
+            void flag_rcl_publish(const char * target_rcl_topic);
+
             void rcl_publish_chatter();
 
             void rcl_publish_map();

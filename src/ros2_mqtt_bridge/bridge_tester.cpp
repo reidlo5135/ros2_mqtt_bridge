@@ -31,6 +31,8 @@
 */
 ros2_mqtt_bridge::RCLMQTTBridgeTester::RCLMQTTBridgeTester()
 : Node(RCL_TESTER_NODE_NAME) {
+    rcl_node_ptr_ = std::shared_ptr<rclcpp::Node>(this, [](rclcpp::Node*){});
+
     rcl_connection_manager_ptr_ = std::make_shared<ros2_mqtt_bridge::RCLConnectionManager>();
 
     rcl_timer_base_ptr_ = rcl_node_ptr_->create_wall_timer(
@@ -119,6 +121,15 @@ std_msgs::msg::Header::UniquePtr ros2_mqtt_bridge::RCLMQTTBridgeTester::rcl_buil
     return rcl_std_msgs_header_ptr;
 }
 
+void ros2_mqtt_bridge::RCLMQTTBridgeTester::flag_rcl_publish(const char * target_rcl_topic) {
+    RCLCPP_INFO(
+        rcl_node_ptr_->get_logger(),
+        "RCL published to [%s]",
+        target_rcl_topic
+    );
+    RCLCPP_LINE_INFO();
+}
+
 void ros2_mqtt_bridge::RCLMQTTBridgeTester::rcl_publish_chatter() {
     std_msgs::msg::String::UniquePtr rcl_std_msgs_string_ptr = std::make_unique<std_msgs::msg::String>();
 
@@ -126,6 +137,8 @@ void ros2_mqtt_bridge::RCLMQTTBridgeTester::rcl_publish_chatter() {
     rcl_std_msgs_string_ptr->set__data(rcl_std_msgs_string_data);
 
     rcl_chatter_publisher_ptr_->publish(std::move(*rcl_std_msgs_string_ptr));
+
+    this->flag_rcl_publish("/chatter");
 }
 
 void ros2_mqtt_bridge::RCLMQTTBridgeTester::rcl_publish_map() {
@@ -181,7 +194,8 @@ void ros2_mqtt_bridge::RCLMQTTBridgeTester::bridge_test_rcl_to_mqtt() {
 * @see signal_input.h
 */
 void ros2_mqtt_bridge::RCLMQTTBridgeTester::sig_handler(int signal_input) {
-    RCUTILS_LOG_INFO_NAMED(RCL_NODE_NAME, "\nstopped with SIG [%i] \n", signal_input);
+    RCUTILS_LOG_INFO_NAMED(RCL_NODE_NAME, "stopped with SIG [%i]", signal_input);
+    RCLCPP_LINE_INFO();
 	signal(signal_input, SIG_IGN);
 	exit(RCL_EXIT_FLAG);
 }
