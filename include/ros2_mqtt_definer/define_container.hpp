@@ -83,9 +83,10 @@
 
 #include <tf2_msgs/msg/tf_message.hpp>
 
+#include <can_msgs/msg/control_hardware.hpp>
+
 #include <nav2_msgs/action/navigate_to_pose.hpp>
 
-#include <tf2_msgs/msg/tf_message.hpp>
 
 /**
  * ------------------------------------------------------
@@ -174,6 +175,11 @@ static constexpr const char * RCL_TF2_MSGS_TYPE = "tf2_msgs/msg";
 static constexpr const char * RCL_NAV2_MSGS_TYPE = "nav2_msgs/msg/";
 
 /**
+ * @brief static const instance for define message type of can_msgs::msg
+*/
+static constexpr const char * RCL_CAN_MSGS_TYPE = "can_msgs/msg/";
+
+/**
  * @brief static const instance for define ignore topic(topic : /parameter_events)
 */
 static constexpr const char * RCL_PARAMETER_EVENTS_TOPIC = "/parameter_events";
@@ -232,21 +238,6 @@ static constexpr const char * RCL_CAN_CONTROL_HARDWARE_TOPIC = "/can/control_har
  * @brief static const instance for define topic(topic : /ublox_fix)
 */
 static constexpr const char * RCL_UBLOX_FIX_TOPIC = "/ublox_fix";
-
-/**
- * @brief static const instance for define topic(topic : /gps_manual_move/request)
-*/
-static constexpr const char * RCL_GPS_MANUAL_MOVE_REQUEST_TOPIC = "/gps_manual_move/request";
-
-/**
- * @brief static const instance for define topic(topic : /gps_manual_move/feedback)
-*/
-static constexpr const char * RCL_GPS_MANUAL_MOVE_FEEDBACK_TOPIC = "/gps_manual_move/feedback";
-
-/**
- * @brief static const instance for define topic(topic : /gps_manual_move/response)
-*/
-static constexpr const char * RCL_GPS_MANUAL_MOVE_RESPONSE_TOPIC = "/gps_manual_move/response";
 
 /**
  * @brief static const instance for define topic(topic : /imu/data)
@@ -1011,6 +1002,31 @@ static constexpr const char * RCL_JSON_NAVIGATE_TO_POSE_FEEDBACK_NUMBER_OF_RECOV
  * @brief static const instance for define message type of nav2_msgs::action::NavigateToPose_FeedBack distance_remaining key
 */
 static constexpr const char * RCL_JSON_NAVIGATE_TO_POSE_FEEDBACK_DISTANCE_REMAINING = "distance_remaining";
+
+/**
+ * @brief static const instance for define message type of can_msgs::msg::CanControlHardWare flag
+*/
+static constexpr const char * RCL_JSON_CAN_CONTROL_HARDWARE_FLAG = "CanControlHardWare";
+
+/**
+ * @brief static const instance for define message type of can_msgs::msg::CanControlHardWare horn key
+*/
+static constexpr const char * RCL_JSON_CAN_CONTROL_HARDWARE_HORN = "horn";
+
+/**
+ * @brief static const instance for define message type of can_msgs::msg::CanControlHardWare head_light key
+*/
+static constexpr const char * RCL_JSON_CAN_CONTROL_HARDWARE_HEAD_LIGHT = "head_light";
+
+/**
+ * @brief static const instance for define message type of can_msgs::msg::CanControlHardWare left_light key
+*/
+static constexpr const char * RCL_JSON_CAN_CONTROL_HARDWARE_LEFT_LIGHT = "left_light";
+
+/**
+ * @brief static const instance for define message type of can_msgs::msg::CanControlHardWare right_light key
+*/
+static constexpr const char * RCL_JSON_CAN_CONTROL_HARDWARE_RIGHT_LIGHT = "right_light";
 
 /**
  * ------------------------------------------------------

@@ -14,6 +14,7 @@
   <depend>sensor_msgs</depend>
   <depend>geometry_msgs</depend>
   <depend>tf2_msgs</depend>
+  <depend>can_msgs</depend>
   <depend>builtin_interfaces</depend>
   
   <buildtool_depend>ament_cmake</buildtool_depend>

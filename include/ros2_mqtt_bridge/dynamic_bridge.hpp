@@ -88,16 +88,22 @@ namespace ros2_mqtt_bridge {
             std::shared_ptr<ros2_mqtt_bridge::NavMessageConverter> rcl_nav_msgs_converter_ptr_;
 
             /**
-             * @brief shared pointer for ros2_mqtt_bridge::StdMessageConverter
-             * @see ros2_mqtt_bridge::StdMessageConverter
+             * @brief shared pointer for ros2_mqtt_bridge::TFMessageConverter
+             * @see ros2_mqtt_bridge::TFMessageConverter
             */
             std::shared_ptr<ros2_mqtt_bridge::TFMessageConverter> rcl_tf_msgs_converter_ptr_;
 
             /**
-             * @brief shared pointer for ros2_mqtt_bridge::StdMessageConverter
-             * @see ros2_mqtt_bridge::StdMessageConverter
+             * @brief shared pointer for ros2_mqtt_bridge::NavigateToPoseActionConverter
+             * @see ros2_mqtt_bridge::NavigateToPoseActionConverter
             */
             std::shared_ptr<ros2_mqtt_bridge::NavigateToPoseActionConverter> rcl_navigate_to_pose_action_converter_ptr_;
+
+            /**
+             * @brief shared pointer for ros2_mqtt_bridge::CanMessageConverter
+             * @see ros2_mqtt_bridge::CanMessageConverter
+            */
+            std::shared_ptr<ros2_mqtt_bridge::CanMessageConverter> rcl_can_msgs_converter_ptr_;
             
             /**
              * @brief Shared Pointer for rclcpp::Publisher(topic : /chatter)
@@ -140,9 +146,19 @@ namespace ros2_mqtt_bridge {
             rclcpp::Publisher<geometry_msgs::msg::Twist>::SharedPtr rcl_cmd_vel_publisher_ptr_;
 
             /**
+             * @brief Shared Pointer for rclcpp::Subscription(topic : /cmd_vel)
+            */
+            rclcpp::Subscription<geometry_msgs::msg::Twist>::SharedPtr rcl_cmd_vel_subscription_ptr_;
+
+            /**
              * @brief Shared Pointer for rclcpp::Subscription(topic : /odom)
             */
             rclcpp::Subscription<nav_msgs::msg::Odometry>::SharedPtr rcl_odom_subscription_ptr_;
+
+            /**
+             * @brief Shared Pointer for rclcpp::Publisher(topic : /can/control_hardware)
+            */
+            rclcpp::Publisher<can_msgs::msg::ControlHardware>::SharedPtr rcl_can_control_hardware_publisher_ptr_;
 
             /**
              * @brief Shared Pointer for rclcpp::Subscription(topic : /ublox_fix)
@@ -189,10 +205,34 @@ namespace ros2_mqtt_bridge {
             /**
             * @brief function for compare MQTT topic and RCL topic before bridge MQTT to RCL
             * @param mqtt_topic target MQTT topic
-            * @param rcl_topic target RCL topic
+            * @param rcl_target_topic target RCL topic
             * @return is_mqtt_topic_equals_rcl_topic bool
             */
-            bool bridge_mqtt_to_rcl_topic_cmp(const std::string & mqtt_topic, const char * rcl_topic);
+            bool bridge_mqtt_to_rcl_topic_cmp(const std::string & mqtt_topic, const char * rcl_target_topic);
+
+            /**
+            * @brief function for compare MQTT topic and RCL topic before bridge MQTT to RCL
+            * @param rcl_subscription_topic target MQTT topic
+            * @param rcl_target_topic target RCL topic
+            * @return is_rcl_subscription_topic_equals_rcl_target_topic bool
+            */
+            bool bridge_mqtt_to_rcl_topic_cmp(const char * rcl_subscription_topic, const char * rcl_target_topic);
+
+            /**
+             * @brief function for compare RCL subscription's message type and RCL target message type before bridge RCL to MQTT
+             * @param rcl_subscription_msgs_type target RCL subscription's message type const std::string &
+             * @param rcl_target_msgs_type target RCL message type const std::string &
+             * @return is_rcl_subscription_message_type_equals_rcl_target_message_type bool
+            */
+            bool bridge_mqtt_to_rcl_msgs_type_cmp(const std::string & rcl_subscription_msgs_type, const char * rcl_target_msgs_type);
+
+            /**
+             * @brief function for flag and log foudate MQTT to RCL
+             * @param rcl_subscription_topic target RCL subscription topic const char *
+             * @param rcl_subscription_msgs_type target RCL subscription message type const std::string &
+             * @return void
+            */
+            void flag_foundate_mqtt_to_rcl(const char * rcl_subscription_topic, const std::string & rcl_subscription_msgs_type);
 
             /**
              * @brief function for compare RCL publisher's topic and RCL target topic before bridge RCL to MQTT
@@ -205,10 +245,18 @@ namespace ros2_mqtt_bridge {
             /**
              * @brief function for compare RCL publisher's message type and RCL target message type before bridge RCL to MQTT
              * @param rcl_publisher_msgs_type target RCL publisher's message type const std::string &
-             * @param rcl_target_msgs_type target RCL message type const char *
+             * @param rcl_target_msgs_type target RCL message type const std::string &
              * @return is_rcl_publisher_message_type_equals_rcl_target_message_type bool
             */
             bool bridge_rcl_to_mqtt_msgs_type_cmp(const std::string & rcl_publisher_msgs_type, const char * rcl_target_msgs_type);
+
+            /**
+             * @brief function for flag and log bridge MQTT to RCL
+             * @param mqtt_topic target MQTT topic
+             * @param mqtt_payload target MQTT payload
+             * @return void
+            */
+            void flag_bridge_mqtt_to_rcl(const std::string & mqtt_topic, const std::string & mqtt_payload);
         public :
             /**
              * Create a new this class' instance
@@ -269,6 +317,7 @@ namespace ros2_mqtt_bridge {
     };
 
     /**
+     * @class RCLConnectionManager
      * @brief final class for defines template functions what implements rclcpp ROS2 connections
     */
     class RCLConnectionManager final {
@@ -382,6 +431,7 @@ namespace ros2_mqtt_bridge {
     };
 
     /**
+     * @class RCLNode
      * @brief final class for initialize rclcpp::Node what defines rclcpp::Node
     */
     class RCLNode final : public rclcpp::Node {
