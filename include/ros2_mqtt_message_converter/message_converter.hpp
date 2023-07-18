@@ -84,7 +84,7 @@ namespace ros2_mqtt_bridge {
                 builtin_interfaces::msg::Time::UniquePtr rcl_builtin_interfaces_time_ptr = std::make_unique<builtin_interfaces::msg::Time>();
 
                 try {
-                    const std::string & raw_header_json_frame_id = raw_header_json.get(RCL_JSON_HEADER_FRAME_ID, RCL_JSON_STRING_DEFAULT).asString();
+                    std::string raw_header_json_frame_id = raw_header_json.get(RCL_JSON_HEADER_FRAME_ID, RCL_JSON_STRING_DEFAULT).asString();
                     rcl_std_msgs_header_ptr->set__frame_id(raw_header_json_frame_id);
 
                     const double & raw_header_json_sec = raw_header_json.get(RCL_JSON_BUILT_IN_INTERFACES_TIME_SEC, RCL_JSON_DOUBLE_DEFAULT).asDouble();
@@ -110,18 +110,21 @@ namespace ros2_mqtt_bridge {
 
             /**
              * @brief inline function for convert std_msgs::msg::String into Json style string
-             * @param rcl_string_ptr target std_msgs::msg::String::SharedPtr data
-             * @return string_json_string const std::string &
+             * @param rcl_std_msgs_string_ptr target std_msgs::msg::String::SharedPtr data
+             * @return std_msgs_string_json_string std::string
             */
-            inline const std::string & string_to_json_string(const std_msgs::msg::String::SharedPtr rcl_string_ptr) {
-                Json::Value string_json;
+            inline std::string std_msgs_string_to_json_string(const std_msgs::msg::String::SharedPtr rcl_std_msgs_string_ptr) {
+                Json::Value std_msgs_string_json;
 
                 try {
-                    string_json[RCL_JSON_STRING_DATA] = rcl_string_ptr->data;
+                    std::string rcl_std_msgs_string_data = rcl_std_msgs_string_ptr->data;
+                    RCUTILS_LOG_INFO_NAMED(RCL_NODE_NAME, "parsing std_msgs/msg/String to json styled string with data : [%s]", rcl_std_msgs_string_data.c_str());
+                    RCLCPP_LINE_INFO();
+                    std_msgs_string_json[RCL_JSON_STRING_DATA] = rcl_std_msgs_string_data;
                 } catch(const Json::Exception & json_expn) {
                     RCUTILS_LOG_ERROR_NAMED(
                         RCL_NODE_NAME,
-                        "error occurred during convert [%s%s] to json\n\twith : [%s]",
+                        "error occurred during convert [%s%s] to json styled string\n\twith : [%s]",
                         RCL_STD_MSGS_TYPE,
                         RCL_JSON_STRING_FLAG,
                         json_expn.what()
@@ -129,9 +132,11 @@ namespace ros2_mqtt_bridge {
                     RCLCPP_LINE_ERROR();
                 }
 
-                const std::string & string_json_string = Json::StyledWriter().write(string_json);
+                std::string std_msgs_string_json_string = Json::StyledWriter().write(std_msgs_string_json);
+                RCUTILS_LOG_INFO_NAMED(RCL_NODE_NAME, "parsed std_msgs_string_json_string : [%s]", std_msgs_string_json_string.c_str());
+                RCLCPP_LINE_INFO();
 
-                return string_json_string;
+                return std_msgs_string_json_string;
             };
 
             /**
@@ -139,7 +144,7 @@ namespace ros2_mqtt_bridge {
              * @param raw_json_string target Json style string
              * @return rcl_std_msgs_string_ptr std_msgs::msg::String::UniquePtr
             */
-            inline std_msgs::msg::String::UniquePtr json_to_string(const std::string & raw_json_string) {
+            inline std_msgs::msg::String::UniquePtr json_to_std_msgs_string(std::string raw_json_string) {
                 Json::Value string_json;
                 Json::Reader json_reader;
                 std_msgs::msg::String::UniquePtr rcl_std_msgs_string_ptr = std::make_unique<std_msgs::msg::String>();
@@ -156,10 +161,10 @@ namespace ros2_mqtt_bridge {
                         );
                         RCLCPP_LINE_INFO();
 
-                        const std::string & string_json_data = string_json.get(RCL_JSON_STRING_DATA, RCL_JSON_STRING_DEFAULT).asString();
+                        std::string string_json_data = string_json.get(RCL_JSON_STRING_DATA, RCL_JSON_STRING_DEFAULT).asString();
                         rcl_std_msgs_string_ptr->set__data(string_json_data);
                     } else {
-                        const std::string & json_formatted_error_message = json_reader.getFormatedErrorMessages();
+                        std::string json_formatted_error_message = json_reader.getFormatedErrorMessages();
 
                         RCUTILS_LOG_ERROR_NAMED(
                             RCL_NODE_NAME, 
@@ -456,9 +461,9 @@ namespace ros2_mqtt_bridge {
             /**
              * @brief inline function for convert geometry_msgs::msg::Pose::SharedPtr into json styled string
              * @param rcl_pose_ptr target geometry_msgs::msg::Pose::SharedPtr
-             * @return pose_json_string const std::string &
+             * @return pose_json_string std::string
             */
-            inline const std::string & pose_to_json_string(const geometry_msgs::msg::Pose::SharedPtr rcl_pose_ptr) {
+            inline std::string pose_to_json_string(const geometry_msgs::msg::Pose::SharedPtr rcl_pose_ptr) {
                 Json::Value pose_json;
 
                 try {
@@ -475,7 +480,7 @@ namespace ros2_mqtt_bridge {
                     RCLCPP_LINE_ERROR();
                 }
 
-                const std::string & pose_json_string = Json::StyledWriter().write(pose_json);
+                std::string pose_json_string = Json::StyledWriter().write(pose_json);
 
                 return pose_json_string;
             };
@@ -617,9 +622,9 @@ namespace ros2_mqtt_bridge {
             /**
              * @brief inline function for convert geometry_msgs::msg::Twist into Json style string
              * @param rcl_twist_ptr target geometry_msgs::msg::Twist::SharedPtr
-             * @return twist_json_string const std::string &
+             * @return twist_json_string std::string
             */
-            inline const std::string & twist_to_json_string(const geometry_msgs::msg::Twist::SharedPtr rcl_twist_ptr) {
+            inline std::string twist_to_json_string(const geometry_msgs::msg::Twist::SharedPtr rcl_twist_ptr) {
                 Json::Value twist_json;
 
                 try {
@@ -636,17 +641,17 @@ namespace ros2_mqtt_bridge {
                     RCLCPP_LINE_ERROR();
                 }
 
-                const std::string & twist_json_string = Json::StyledWriter().write(twist_json);
+                std::string twist_json_string = Json::StyledWriter().write(twist_json);
 
                 return twist_json_string;
             };
 
             /**
              * @brief inline function for convert Json style string into geometry_msgs::msg::Twist::UniquePtr
-             * @param raw_twist_json_string target const std::string &
+             * @param raw_twist_json_string target std::string
              * @return rcl_twist_ptr geometry_msgs::msg::Twist::UniquePtr
             */
-            inline geometry_msgs::msg::Twist::UniquePtr json_to_twist(const std::string & raw_twist_json_string) {
+            inline geometry_msgs::msg::Twist::UniquePtr json_to_twist(std::string raw_twist_json_string) {
                 Json::Value twist_json;
                 Json::Reader json_reader;
                 geometry_msgs::msg::Twist::UniquePtr rcl_twist_ptr = std::make_unique<geometry_msgs::msg::Twist>();
@@ -696,7 +701,7 @@ namespace ros2_mqtt_bridge {
                             RCLCPP_LINE_ERROR();
                         }
                     } else {
-                        const std::string & json_formatted_error_message = json_reader.getFormatedErrorMessages();
+                        std::string json_formatted_error_message = json_reader.getFormatedErrorMessages();
 
                         RCUTILS_LOG_ERROR_NAMED(
                             RCL_NODE_NAME,
@@ -799,10 +804,10 @@ namespace ros2_mqtt_bridge {
 
             /**
              * @brief inline function for Json style string into geometry_msgs::msg::PoseStamped::UniquePtr
-             * @param raw_pose_stamped_json_string target const std::string &
+             * @param raw_pose_stamped_json_string target std::string
              * @return rcl_pose_stamped_ptr geometry_msgs::msg::PoseStamped::UniquePtr
             */
-            inline geometry_msgs::msg::PoseStamped::UniquePtr json_to_pose_stamped(const std::string & raw_pose_stapmed_json_string) {
+            inline geometry_msgs::msg::PoseStamped::UniquePtr json_to_pose_stamped(std::string raw_pose_stapmed_json_string) {
                 Json::Value pose_stamped_json;
                 Json::Reader json_reader;
                 geometry_msgs::msg::PoseStamped::UniquePtr rcl_pose_stamped_ptr = std::make_unique<geometry_msgs::msg::PoseStamped>();
@@ -968,10 +973,10 @@ namespace ros2_mqtt_bridge {
 
             /**
              * @brief inline function for convert Json style string into geometry_msgs::msg::PoseWithCovariance::UniquePtr
-             * @param raw_pose_with_covariance_string target const std::string &
+             * @param raw_pose_with_covariance_string target std::string
              * @return rcl_pose_with_covariance_ptr geometry_msgs::msg::PoseWithCovariance::UniquePtr
             */
-            inline geometry_msgs::msg::PoseWithCovariance::UniquePtr json_to_pose_with_covariance(const std::string & raw_pose_with_covariance_string) {
+            inline geometry_msgs::msg::PoseWithCovariance::UniquePtr json_to_pose_with_covariance(std::string raw_pose_with_covariance_string) {
                 Json::Value pose_with_covariance_json;
                 Json::Reader json_reader;
                 geometry_msgs::msg::PoseWithCovariance::UniquePtr rcl_pose_with_covariance_ptr = std::make_unique<geometry_msgs::msg::PoseWithCovariance>();
@@ -1030,10 +1035,10 @@ namespace ros2_mqtt_bridge {
 
             /**
              * @brief inline function for convert Json style string into geometry_msgs::msg::PoseWithCovarianceStamped::UniquePtr
-             * @param raw_pose_with_covariance_stamped_string target const std::string &
+             * @param raw_pose_with_covariance_stamped_string target std::string
              * @return rcl_pose_with_covariance_stamped_ptr geometry_msgs::msg::PoseWithCovarianceStamped::UniquePtr
             */
-            inline geometry_msgs::msg::PoseWithCovarianceStamped::UniquePtr json_to_pose_with_covariance_stamped(const std::string & raw_pose_with_covariance_stamped_string) {
+            inline geometry_msgs::msg::PoseWithCovarianceStamped::UniquePtr json_to_pose_with_covariance_stamped(std::string raw_pose_with_covariance_stamped_string) {
                 Json::Value pose_with_covariance_stamped_json;
                 Json::Reader json_reader;
                 geometry_msgs::msg::PoseWithCovarianceStamped::UniquePtr rcl_pose_with_covariance_stamped_ptr = std::make_unique<geometry_msgs::msg::PoseWithCovarianceStamped>();
@@ -1194,9 +1199,9 @@ namespace ros2_mqtt_bridge {
             /**
              * @brief inline function for convert sensor_msgs::msg::LaserScan::SharedPtr into json styled string
              * @param rcl_laser_scan_ptr target const sensor_msgs::msg::LaserScan::SharedPtr
-             * @return laser_scan_json_string const std::string &
+             * @return laser_scan_json_string std::string
             */
-            inline const std::string & laser_scan_to_json_string(const sensor_msgs::msg::LaserScan::SharedPtr rcl_laser_scan_ptr) {
+            inline std::string laser_scan_to_json_string(const sensor_msgs::msg::LaserScan::SharedPtr rcl_laser_scan_ptr) {
                 Json::Value laser_scan_json;
 
                 try {
@@ -1230,7 +1235,7 @@ namespace ros2_mqtt_bridge {
                     RCLCPP_LINE_ERROR();
                 }
 
-                const std::string & laser_scan_json_string = Json::StyledWriter().write(laser_scan_json);
+                std::string laser_scan_json_string = Json::StyledWriter().write(laser_scan_json);
                 return laser_scan_json_string;
             };
 
@@ -1354,9 +1359,9 @@ namespace ros2_mqtt_bridge {
             /**
              * @brief inline function for convert sensor_msgs::msg::Imu::SharedPtr into json styled string
              * @param rcl_imu_ptr target sensor_msgs::msg::Imu::SharedPtr
-             * @return imu_json const std::string &
+             * @return imu_json std::string
             */
-            inline const std::string & imu_to_json_string(const sensor_msgs::msg::Imu::SharedPtr rcl_imu_ptr) {
+            inline std::string imu_to_json_string(const sensor_msgs::msg::Imu::SharedPtr rcl_imu_ptr) {
                 Json::Value imu_json;
 
                 try {
@@ -1378,7 +1383,7 @@ namespace ros2_mqtt_bridge {
                     RCLCPP_LINE_ERROR();
                 }
 
-                const std::string & imu_json_string = Json::StyledWriter().write(imu_json);
+                std::string imu_json_string = Json::StyledWriter().write(imu_json);
 
                 return imu_json_string;
             };
@@ -1450,7 +1455,7 @@ namespace ros2_mqtt_bridge {
              * @param rcl_nav_sat_fix_ptr target sensro_msgs::msg::NavSatFix::SharedPtr
              * @return nav_sat_fix_json Json::Value
             */
-            inline const std::string & nav_sat_fix_to_json_string(const sensor_msgs::msg::NavSatFix::SharedPtr rcl_nav_sat_fix_ptr) {
+            inline std::string nav_sat_fix_to_json_string(const sensor_msgs::msg::NavSatFix::SharedPtr rcl_nav_sat_fix_ptr) {
                 Json::Value nav_sat_fix_json;
 
                 try {
@@ -1475,7 +1480,7 @@ namespace ros2_mqtt_bridge {
                     RCLCPP_LINE_ERROR();
                 }
 
-                const std::string & nav_sat_fix_json_string = Json::StyledWriter().write(nav_sat_fix_json);
+                std::string nav_sat_fix_json_string = Json::StyledWriter().write(nav_sat_fix_json);
 
                 return nav_sat_fix_json_string;
             };
@@ -1511,9 +1516,9 @@ namespace ros2_mqtt_bridge {
             /**
              * @brief inline function for convert sensor_msgs::msg::BatteryState into Json::Value
              * @param rcl_battery_state_ptr target sensor_msgs::msg::BatteryState::SharedPtr
-             * @return battery_state_json const std::string &
+             * @return battery_state_json std::string
             */
-            inline const std::string & battery_state_to_json_string(const sensor_msgs::msg::BatteryState::SharedPtr rcl_battery_state_ptr) {
+            inline std::string battery_state_to_json_string(const sensor_msgs::msg::BatteryState::SharedPtr rcl_battery_state_ptr) {
                 Json::Value battery_state_json;
 
                 try {
@@ -1571,7 +1576,7 @@ namespace ros2_mqtt_bridge {
                     RCLCPP_LINE_ERROR();
                 }
 
-                const std::string & battery_state_json_string = Json::StyledWriter().write(battery_state_json);
+                std::string battery_state_json_string = Json::StyledWriter().write(battery_state_json);
 
                 return battery_state_json_string;
             };
@@ -1622,9 +1627,9 @@ namespace ros2_mqtt_bridge {
             /**
              * @brief inline function for nav_msgs::msg::Odometry::SharedPtr into json styled string
              * @param rcl_odometry_ptr target nav_msgs::msg::Odometry::SharedPtr
-             * @return odometry_json_string const std::string &
+             * @return odometry_json_string std::string
             */
-            inline const std::string & odometry_to_json_string(const nav_msgs::msg::Odometry::SharedPtr rcl_odometry_ptr) {
+            inline std::string odometry_to_json_string(const nav_msgs::msg::Odometry::SharedPtr rcl_odometry_ptr) {
                 Json::Value odometry_json;
 
                 try {
@@ -1643,7 +1648,7 @@ namespace ros2_mqtt_bridge {
                     RCLCPP_LINE_ERROR();
                 }
 
-                const std::string & odometry_json_string = Json::StyledWriter().write(odometry_json);
+                std::string odometry_json_string = Json::StyledWriter().write(odometry_json);
 
                 return odometry_json_string;
             };
@@ -1704,9 +1709,9 @@ namespace ros2_mqtt_bridge {
             /**
              * @brief inline function for nav_msgs::msg::OccupancyGrid::SharedPtr into json styled string
              * @param rcl_occupancy_grid_ptr target nav_msgs::msg::OccupancyGrid::SharedPtr
-             * @return occupancy_grid_json_string const std::string &
+             * @return occupancy_grid_json_string std::string
             */
-            inline const std::string & occupancy_grid_to_json_string(const nav_msgs::msg::OccupancyGrid::SharedPtr rcl_occupancy_grid_ptr) {
+            inline std::string occupancy_grid_to_json_string(const nav_msgs::msg::OccupancyGrid::SharedPtr rcl_occupancy_grid_ptr) {
                 Json::Value occupancy_grid_json;
 
                 try {
@@ -1726,7 +1731,7 @@ namespace ros2_mqtt_bridge {
                     RCLCPP_LINE_ERROR();
                 }
 
-                const std::string & occupancy_grid_json_string = Json::StyledWriter().write(occupancy_grid_json);
+                std::string occupancy_grid_json_string = Json::StyledWriter().write(occupancy_grid_json);
 
                 return occupancy_grid_json_string;
             };
@@ -1734,9 +1739,9 @@ namespace ros2_mqtt_bridge {
             /**
              * @brief inline function for nav_msgs::msg::Path::SharedPtr into json styled string
              * @param rcl_path_ptr target nav_msgs::msg::Path::SharedPtr
-             * @return path_json_string const std::string &
+             * @return path_json_string std::string
             */
-            inline const std::string & path_to_json(const nav_msgs::msg::Path::SharedPtr rcl_path_ptr) {
+            inline std::string path_to_json(const nav_msgs::msg::Path::SharedPtr rcl_path_ptr) {
                 Json::Value path_json;
 
                 try {
@@ -1759,7 +1764,7 @@ namespace ros2_mqtt_bridge {
                     RCLCPP_LINE_ERROR();
                 }
 
-                const std::string & path_json_string = Json::StyledWriter().write(path_json);
+                std::string path_json_string = Json::StyledWriter().write(path_json);
 
                 return path_json_string;
             };
@@ -1796,9 +1801,9 @@ namespace ros2_mqtt_bridge {
             /**
              * @brief inline function for convert tf2_msgs::msg::TFMessage into json styled string
              * @param rcl_tf_message_ptr target tf2_msgs::msg::TFMessage::SharedPtr
-             * @return tf_message_json Json::Value
+             * @return tf_message_json_string std::string
             */
-            inline const std::string & tf_message_to_json_string(const tf2_msgs::msg::TFMessage::SharedPtr rcl_tf_message_ptr) {
+            inline std::string tf_message_to_json_string(const tf2_msgs::msg::TFMessage::SharedPtr rcl_tf_message_ptr) {
                 Json::Value tf_message_json;
 
                 try {
@@ -1823,7 +1828,7 @@ namespace ros2_mqtt_bridge {
                     RCLCPP_LINE_ERROR();
                 }
 
-                const std::string & tf_message_json_string = Json::StyledWriter().write(tf_message_json);
+                std::string tf_message_json_string = Json::StyledWriter().write(tf_message_json);
 
                 return tf_message_json_string;
             };
@@ -1873,10 +1878,10 @@ namespace ros2_mqtt_bridge {
 
             /**
              * @brief inline function for convert json styled string into nav2_msgs::action::NavigateToPose_Goal::UniquePtr
-             * @param raw_navigate_to_pose_request_json_string target const std::string &
+             * @param raw_navigate_to_pose_request_json_string target std::string
              * @return rcl_navigate_to_pose_goal_ptr nav2_msgs::action::NavigateToPose_Goal::UniquePtr
             */
-            inline nav2_msgs::action::NavigateToPose_Goal::UniquePtr json_to_navigate_to_pose_goal(const std::string & raw_navigate_to_pose_request_json_string) {
+            inline nav2_msgs::action::NavigateToPose_Goal::UniquePtr json_to_navigate_to_pose_goal(std::string raw_navigate_to_pose_request_json_string) {
                 Json::Value navigate_to_pose_goal_json;
                 Json::Reader json_reader;
                 nav2_msgs::action::NavigateToPose_Goal::UniquePtr rcl_navigate_to_pose_goal_ptr = std::make_unique<nav2_msgs::action::NavigateToPose_Goal>();
@@ -1903,7 +1908,7 @@ namespace ros2_mqtt_bridge {
                             );
                             RCLCPP_LINE_INFO();
                             
-                            const std::string & pose_stamped_json_string = Json::StyledWriter().write(pose_stamped_json);
+                            std::string pose_stamped_json_string = Json::StyledWriter().write(pose_stamped_json);
                             rcl_navigate_to_pose_goal_ptr->set__pose(*(rcl_geometry_msgs_converter_ptr_->json_to_pose_stamped(pose_stamped_json_string)));
                         } else {
                             RCUTILS_LOG_ERROR_NAMED(RCL_NODE_NAME, "navigate_to_pose pose stamped json is null");
@@ -1914,14 +1919,14 @@ namespace ros2_mqtt_bridge {
                         bool is_behavior_tree_string_nullstr = behavior_tree_string.isNull();
 
                         if(!is_behavior_tree_string_nullstr) {
-                            const std::string & behavior_tree = behavior_tree_string.asString();
+                            std::string behavior_tree = behavior_tree_string.asString();
                             rcl_navigate_to_pose_goal_ptr->set__behavior_tree(behavior_tree);
                         } else {
                             RCUTILS_LOG_ERROR_NAMED(RCL_NODE_NAME, "navigate_to_pose behavior string is null");
                             RCLCPP_LINE_ERROR();
                         }
                     } else {
-                        const std::string & json_formatted_error_message = json_reader.getFormatedErrorMessages();
+                        std::string json_formatted_error_message = json_reader.getFormatedErrorMessages();
 
                         RCUTILS_LOG_ERROR_NAMED(
                             RCL_NODE_NAME,
@@ -1947,9 +1952,9 @@ namespace ros2_mqtt_bridge {
             /**
              * @brief inline function for convert nav2_msgs::action::NavigateToPose_Result into json styled string
              * @param rcl_navigate_to_pose_result target const nav2_msgs::action::NavigateToPose_Result &
-             * @return navigate_to_pose_result_json_string const std::string &
+             * @return navigate_to_pose_result_json_string std::string
             */
-            inline const std::string & navigate_to_pose_result_to_json_string(const nav2_msgs::action::NavigateToPose_Result & rcl_navigate_to_pose_result) {
+            inline std::string navigate_to_pose_result_to_json_string(const nav2_msgs::action::NavigateToPose_Result & rcl_navigate_to_pose_result) {
                 Json::Value navigate_to_pose_result_json;
 
                 try {
@@ -1965,7 +1970,7 @@ namespace ros2_mqtt_bridge {
                     RCLCPP_LINE_ERROR();
                 }
 
-                const std::string & navigate_to_pose_result_json_string = Json::StyledWriter().write(navigate_to_pose_result_json);
+                std::string navigate_to_pose_result_json_string = Json::StyledWriter().write(navigate_to_pose_result_json);
 
                 return navigate_to_pose_result_json_string;
             };
@@ -1973,9 +1978,9 @@ namespace ros2_mqtt_bridge {
             /**
              * @brief inline function for convert nav2_msgs::action::NavigateToPose_Feedback into json styled string
              * @param rcl_navigate_to_pose_feedback target const nav2_msgs::action::NavigateToPose_Feedback &
-             * @return navigate_to_pose_feedback_json_string const std::string &
+             * @return navigate_to_pose_feedback_json_string std::string
             */
-            inline const std::string & navigate_pose_feedback_to_json_string(const nav2_msgs::action::NavigateToPose_Feedback & rcl_navigate_to_pose_feedback) {
+            inline std::string navigate_pose_feedback_to_json_string(const nav2_msgs::action::NavigateToPose_Feedback & rcl_navigate_to_pose_feedback) {
                 Json::Value navigate_to_pose_feedback_json;
 
                 try {
@@ -1994,7 +1999,7 @@ namespace ros2_mqtt_bridge {
                     RCLCPP_LINE_ERROR();
                 }
 
-                const std::string & navigate_to_pose_feedback_json_string = Json::StyledWriter().write(navigate_to_pose_feedback_json);
+                std::string navigate_to_pose_feedback_json_string = Json::StyledWriter().write(navigate_to_pose_feedback_json);
 
                 return navigate_to_pose_feedback_json_string;
             };
@@ -2024,10 +2029,10 @@ namespace ros2_mqtt_bridge {
 
             /**
              * @brief inline function for convert json styled string into can_msgs::msg::ControlHardware::UniquePtr
-             * @param raw_can_control_hard_ware_json_string target const std::string &
+             * @param raw_can_control_hard_ware_json_string target std::string
              * @return rcl_can_control_hardware_ptr can_msgs::msg::ControlHardware::UniquePtr
             */
-            inline can_msgs::msg::ControlHardware::UniquePtr json_to_can_control_hardware(const std::string & raw_can_control_hardware_json_string) {
+            inline can_msgs::msg::ControlHardware::UniquePtr json_to_can_control_hardware(std::string raw_can_control_hardware_json_string) {
                 Json::Value can_control_hardware_json;
                 Json::Reader json_reader;
                 can_msgs::msg::ControlHardware::UniquePtr rcl_can_control_hardware_ptr = std::make_unique<can_msgs::msg::ControlHardware>();
@@ -2055,7 +2060,7 @@ namespace ros2_mqtt_bridge {
                         bool can_control_hardware_right_light = can_control_hardware_json[RCL_JSON_CAN_CONTROL_HARDWARE_RIGHT_LIGHT].asBool();
                         rcl_can_control_hardware_ptr->set__right_light(can_control_hardware_right_light);
                     } else {
-                        const std::string & json_formatted_error_message = json_reader.getFormatedErrorMessages();
+                        std::string json_formatted_error_message = json_reader.getFormatedErrorMessages();
 
                         RCUTILS_LOG_ERROR_NAMED(
                             RCL_NODE_NAME,
