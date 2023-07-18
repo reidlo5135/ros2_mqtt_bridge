@@ -64,6 +64,11 @@ namespace ros2_mqtt_bridge {
             std::shared_ptr<ros2_mqtt_bridge::RCLConnectionManager> rcl_connection_manager_ptr_;
 
             /**
+             * @brief shared pointer for rclcpp::TimerBase
+            */
+            rclcpp::TimerBase::SharedPtr rcl_timer_base_ptr_;
+
+            /**
              * @brief shared pointer for ros2_mqtt_bridge::StdMessageConverter
              * @see ros2_mqtt_bridge::StdMessageConverter
             */
@@ -257,6 +262,14 @@ namespace ros2_mqtt_bridge {
              * @return void
             */
             void flag_bridge_mqtt_to_rcl(const std::string & mqtt_topic, const std::string & mqtt_payload);
+
+            /**
+             * @brief function for flag and log bridge RCL to MQTT
+             * @param rcl_publisher_topic target RCL publisher topic
+             * @param rcl_json_string target parsed RCL json styled string
+             * @return void
+            */
+            void flag_bridge_rcl_to_mqtt(const char * rcl_publisher_topic, const std::string & rcl_json_string);
         public :
             /**
              * Create a new this class' instance
@@ -326,22 +339,26 @@ namespace ros2_mqtt_bridge {
              * Create a new this class' instance
              * @brief Default Constructor
             */
-            explicit RCLConnectionManager(){};
+            inline explicit RCLConnectionManager() {
+
+            };
 
             /**
              * Destroy this class' instance
              * @brief Default Destructor
             */
-            virtual ~RCLConnectionManager(){};
+            inline virtual ~RCLConnectionManager() {
+
+            };
 
             /**
-             * @brief template function for initialize rclcpp::Publisher and register into rclcpp::Node
+             * @brief inline template function for initialize rclcpp::Publisher and register into rclcpp::Node
              * @param rcl_node_ptr rclcpp::Node's shared pointer
              * @param rcl_topic_name target ROS2 topic
              * @return typename rclcpp::Publisher<rcl_message_type>::SharedPtr
             */
             template<typename rcl_message_type>
-            typename rclcpp::Publisher<rcl_message_type>::SharedPtr register_publisher(
+            inline typename rclcpp::Publisher<rcl_message_type>::SharedPtr register_publisher(
                 rclcpp::Node::SharedPtr rcl_node_ptr,
                 const std::string & rcl_topic_name
             ) {
@@ -358,14 +375,14 @@ namespace ros2_mqtt_bridge {
             };
 
             /**
-             * @brief template function for initialize rclcpp::Subscription and register into rclcpp::Node
+             * @brief inline template function for initialize rclcpp::Subscription and register into rclcpp::Node
              * @param rcl_node_ptr rclcpp::Node's shared pointer
              * @param rcl_topic_name target ROS2 topic
              * @param rcl_subscription_callback callback function for ROS2 subscription callback
              * @return typename rclcpp::Subscription<rcl_message_type>::SharedPtr
             */
             template<typename rcl_message_type>
-            typename rclcpp::Subscription<rcl_message_type>::SharedPtr register_subscription(
+            inline typename rclcpp::Subscription<rcl_message_type>::SharedPtr register_subscription(
                 rclcpp::Node::SharedPtr rcl_node_ptr,
                 const std::string & rcl_topic_name,
                 std::function<void(std::shared_ptr<rcl_message_type>)> rcl_subscription_callback
@@ -384,14 +401,14 @@ namespace ros2_mqtt_bridge {
             };
 
             /**
-             * @brief template function for initialize rclcpp::Client and register into rclcpp::Node
+             * @brief inline template function for initialize rclcpp::Client and register into rclcpp::Node
              * @param rcl_node_ptr rclcpp::Node's shared pointer
              * @param rcl_target_service_server_name target ROS2 target service server name
              * @param rcl_service_callback callback function for ROS2 service callback
              * @return typename rclcpp::Client<rcl_message_type>::SharedPtr
             */
             template<typename rcl_message_type>
-            typename rclcpp::Client<rcl_message_type>::SharedPtr register_service_client(
+            inline typename rclcpp::Client<rcl_message_type>::SharedPtr register_service_client(
                 rclcpp::Node::SharedPtr rcl_node_ptr,
                 const std::string & rcl_target_service_server_name 
             ) {
@@ -406,14 +423,14 @@ namespace ros2_mqtt_bridge {
             };
 
             /**
-             * @brief template function for initialize rclcpp::Service and register into rclcpp::Node
+             * @brief inline template function for initialize rclcpp::Service and register into rclcpp::Node
              * @param rcl_node_ptr rclcpp::Node's shared pointer
              * @param rcl_service_server_name target ROS2 service server name
              * @param rcl_service_callback callback function for ROS2 service callback
              * @return typename rclcpp::Service<rcl_message_type>::SharedPtr
             */
             template<typename rcl_message_type>
-            typename rclcpp::Service<rcl_message_type>::SharedPtr register_service_server(
+            inline typename rclcpp::Service<rcl_message_type>::SharedPtr register_service_server(
                 rclcpp::Node::SharedPtr rcl_node_ptr,
                 const std::string & rcl_service_server_name,
                 std::function<void(std::shared_ptr<rcl_message_type>)> rcl_service_callback
