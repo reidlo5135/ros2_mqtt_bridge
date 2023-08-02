@@ -735,7 +735,7 @@ namespace ros2_mqtt_bridge {
                 try {
                     const int & target_double_36UL_array_size = target_float_36UL_array.size();
 
-                    for(int i=0;i<target_double_36UL_array_size;i++) {
+                    for( int i = 0 ; i < target_double_36UL_array_size ; i++ ) {
                         target_double_36UL_array_json[i] = target_float_36UL_array[i];
                     }
                 } catch(const Json::Exception & json_expn) {
@@ -882,7 +882,7 @@ namespace ros2_mqtt_bridge {
                 try {
                     const int & target_double_36UL_array_size = target_double_36UL_array.size();
 
-                    for(int i=0;i<target_double_36UL_array_size;i++) {
+                    for( int i = 0 ; i < target_double_36UL_array_size ; i++ ) {
                         parsed_array_json[i] = target_double_36UL_array[i];
                     }
                 } catch(const Json::Exception & json_expn) {
@@ -914,7 +914,7 @@ namespace ros2_mqtt_bridge {
                     if(is_pose_covariance_json_array) {
                         bool is_pose_covariance_default_size = (pose_covariance_json.size() == RCL_JSON_POSE_COVARIANCE_SIZE_DEFAULT);
                         if(is_pose_covariance_default_size) {
-                            for(int i=0;i<RCL_JSON_POSE_COVARIANCE_SIZE_DEFAULT;i++) {
+                            for( int i = 0 ; i < RCL_JSON_POSE_COVARIANCE_SIZE_DEFAULT ; i++ ) {
                                 rcl_pose_covariance_array[i] = pose_covariance_json[i].asDouble();
                             }
                         } else {
@@ -1216,12 +1216,12 @@ namespace ros2_mqtt_bridge {
                     laser_scan_json[RCL_JSON_LASER_SCAN_RANGE_MAX] = rcl_laser_scan_ptr->range_max;
                     
                     const std::vector<float> & rcl_laser_scan_ranges = rcl_laser_scan_ptr->ranges;
-                    for (const float & range : rcl_laser_scan_ranges) {
+                    for ( const float & range : rcl_laser_scan_ranges ) {
                         laser_scan_json[RCL_JSON_LASER_SCAN_RANGES].append(range);
                     }
 
                     const std::vector<float> & rcl_laser_scan_intensities = rcl_laser_scan_ptr->intensities;
-                    for (const float & intense : rcl_laser_scan_intensities) {
+                    for ( const float & intense : rcl_laser_scan_intensities ) {
                         laser_scan_json[RCL_JSON_LASER_SCAN_INTENSITIES].append(intense);
                     }
                 } catch(const Json::Exception & json_expn) {
@@ -1254,7 +1254,7 @@ namespace ros2_mqtt_bridge {
                     if(is_scan_array_json_array) {
                         const int & scan_array_json_size = scan_array_json.size();
 
-                        for(int i=0;i<scan_array_json_size;i++) {
+                        for( int i = 0 ; i < scan_array_json_size ; i++ ) {
                             const float & scan_array_element = scan_array_json[i].asFloat();
                             rcl_scan_array.push_back(scan_array_element);
                         }
@@ -1339,7 +1339,7 @@ namespace ros2_mqtt_bridge {
                 try {
                     const int & target_double_9UL_array_size = target_double_9UL_array.size();
 
-                    for(int i=0;i<target_double_9UL_array_size;i++) {
+                    for( int i = 0 ; i < target_double_9UL_array_size ; i++ ) {
                         target_double_9UL_array_json[i] = target_double_9UL_array[i];
                     }
                 } catch(const Json::Exception & json_expn) {
@@ -1433,7 +1433,7 @@ namespace ros2_mqtt_bridge {
                 try {
                     const int & target_array_size = target_double_9UL_array.size();
 
-                    for(int i=0;i<target_array_size;i++) {
+                    for( int i = 0 ; i < target_array_size ; i++ ) {
                         parsed_array_json[i] = target_double_9UL_array[i];
                     }
                 } catch(const Json::Exception & json_expn) {
@@ -1496,7 +1496,7 @@ namespace ros2_mqtt_bridge {
                 try {
                     const int & target_float_vector_size = target_float_vector.size();
 
-                    for(int i=0;i<target_float_vector_size;i++) {
+                    for( int i = 0 ; i < target_float_vector_size ; i++ ) {
                         parsed_array_json[i] = target_float_vector[i];
                     }
                 } catch(const Json::Exception & json_expn) {
@@ -1689,7 +1689,7 @@ namespace ros2_mqtt_bridge {
                 Json::Value occupancy_grid_map_data_array_json;
 
                 try {
-                    for(int i=0;i<occupancy_grid_map_size;i++) {
+                    for( int i = 0 ; i < occupancy_grid_map_size ; i++ ) {
                         occupancy_grid_map_data_array_json[i] = occupancy_grid_map_data[i];
                     }
                 } catch(const Json::Exception & json_expn) {
@@ -1748,7 +1748,7 @@ namespace ros2_mqtt_bridge {
                     const std::vector<geometry_msgs::msg::PoseStamped, std::allocator<geometry_msgs::msg::PoseStamped>> & rcl_path_poses = rcl_path_ptr->poses;
                     const int & rcl_path_poses_size = rcl_path_ptr->poses.size();
 
-                    for(const geometry_msgs::msg::PoseStamped & rcl_path_pose_stamped : rcl_path_poses) {
+                    for( const geometry_msgs::msg::PoseStamped & rcl_path_pose_stamped : rcl_path_poses ) {
                         Json::Value path_pose_stamped_json;
                         path_pose_stamped_json = rcl_geometry_msgs_json_converter_ptr_->pose_stamped_to_json(rcl_path_pose_stamped);
                         path_json[RCL_JSON_PATH_POSES].append(path_pose_stamped_json);
@@ -1810,7 +1810,7 @@ namespace ros2_mqtt_bridge {
                     std::vector<geometry_msgs::msg::TransformStamped, std::allocator<geometry_msgs::msg::TransformStamped>> rcl_tf_message_transforms = rcl_tf_message_ptr->transforms;
                     const int & rcl_tf_message_transforms_size = rcl_tf_message_transforms.size();
 
-                    for(const geometry_msgs::msg::TransformStamped & rcl_tf_message_transform_stamped : rcl_tf_message_transforms) {
+                    for( const geometry_msgs::msg::TransformStamped & rcl_tf_message_transform_stamped : rcl_tf_message_transforms ) {
                         Json::Value tf_message_transform_stamped_json;
 
                         tf_message_transform_stamped_json = rcl_geometry_msgs_converter_ptr_->transform_stamped_to_json(rcl_tf_message_transform_stamped);

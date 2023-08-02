@@ -33,7 +33,7 @@ ros2_mqtt_bridge::RCLMQTTBridgeTester::RCLMQTTBridgeTester()
 : Node(RCL_TESTER_NODE_NAME) {
     rcl_node_ptr_ = std::shared_ptr<rclcpp::Node>(this, [](rclcpp::Node*){});
 
-    rcl_connection_manager_ptr_ = std::make_shared<ros2_mqtt_bridge::RCLConnectionManager>();
+    rcl_connection_manager_ptr_ = std::make_shared<ros2_mqtt_bridge::RCLConnection>();
 
     rcl_timer_base_ptr_ = rcl_node_ptr_->create_wall_timer(
         std::chrono::milliseconds(500),
@@ -193,7 +193,7 @@ void ros2_mqtt_bridge::RCLMQTTBridgeTester::bridge_test_rcl_to_mqtt() {
 * @return void
 * @see signal_input.h
 */
-void ros2_mqtt_bridge::RCLMQTTBridgeTester::sig_handler(int signal_input) {
+void ros2_mqtt_bridge::RCLMQTTBridgeTester::signal_handler(int signal_input) {
     RCUTILS_LOG_INFO_NAMED(RCL_NODE_NAME, "stopped with SIG [%i]", signal_input);
     RCLCPP_LINE_INFO();
 	signal(signal_input, SIG_IGN);
@@ -204,8 +204,8 @@ int main(int argc, const char * const * argv) {
     rclcpp::init(argc, argv);
     std::shared_ptr<rclcpp::Node> rcl_node_ptr = std::make_shared<ros2_mqtt_bridge::RCLMQTTBridgeTester>();
 
-    signal(SIGINT, &ros2_mqtt_bridge::RCLMQTTBridgeTester::sig_handler);
-    signal(SIGTSTP, &ros2_mqtt_bridge::RCLMQTTBridgeTester::sig_handler);
+    signal(SIGINT, &ros2_mqtt_bridge::RCLMQTTBridgeTester::signal_handler);
+    signal(SIGTSTP, &ros2_mqtt_bridge::RCLMQTTBridgeTester::signal_handler);
 
     rclcpp::executors::SingleThreadedExecutor rcl_single_thread_executor;
     while(rclcpp::ok()) {

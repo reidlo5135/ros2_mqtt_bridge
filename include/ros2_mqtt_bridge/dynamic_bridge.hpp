@@ -26,19 +26,19 @@
 #include "ros2_mqtt_message_converter/message_converter.hpp"
 
 /**
- * @brief namespace for define RCLMQTTBridgeManager, RCLConnectionManager, RCLNode classes
+ * @brief namespace for define MQTTConnection, RCLConnection, Bridge classes
 */
 
 namespace ros2_mqtt_bridge {
 
-    class RCLNode;
-    class RCLConnectionManager;
+    class Bridge;
+    class RCLConnection;
     
     /**
-     * @class RCLMQTTBridgeManager
+     * @class MQTTConnection
      * @brief final class for implements mqtt::callback what defines MQTT connections
     */
-    class RCLMQTTBridgeManager final : public virtual mqtt::callback {
+    class MQTTConnection final : public virtual mqtt::callback {
         private :
             /**
              * @brief mqtt::async_client instance
@@ -52,16 +52,16 @@ namespace ros2_mqtt_bridge {
             rclcpp::Node::SharedPtr rcl_node_ptr_;
 
             /**
-             * @brief shared pointer for ros2_mqtt_bridge::RCLMQTTBridgeManager
-             * @see ros2_mqtt_bridge::RCLMQTTBridgeManager
+             * @brief shared pointer for ros2_mqtt_bridge::MQTTConnection
+             * @see ros2_mqtt_bridge::MQTTConnection
             */
-            std::shared_ptr<ros2_mqtt_bridge::RCLMQTTBridgeManager> rcl_mqtt_bridge_manager_ptr_;
+            std::shared_ptr<ros2_mqtt_bridge::MQTTConnection> mqtt_connection_ptr_;
 
             /**
-             * @brief shared pointer for ros2_mqtt_bridge::RCLConnectionManager
-             * @see ros2_mqtt_bridge::RCLConnectionManager
+             * @brief shared pointer for ros2_mqtt_bridge::RCLConnection
+             * @see ros2_mqtt_bridge::RCLConnection
             */
-            std::shared_ptr<ros2_mqtt_bridge::RCLConnectionManager> rcl_connection_manager_ptr_;
+            std::shared_ptr<ros2_mqtt_bridge::RCLConnection> rcl_connection_ptr_;
 
             /**
              * @brief shared pointer for rclcpp::TimerBase
@@ -275,13 +275,13 @@ namespace ros2_mqtt_bridge {
              * Create a new this class' instance
              * @brief Default Constructor
             */
-            explicit RCLMQTTBridgeManager(rclcpp::Node::SharedPtr rcl_node_ptr, std::shared_ptr<ros2_mqtt_bridge::RCLConnectionManager> rcl_connection_manager_ptr);
+            explicit MQTTConnection(rclcpp::Node::SharedPtr rcl_node_ptr, std::shared_ptr<ros2_mqtt_bridge::RCLConnection> rcl_connection_ptr);
 
             /**
              * Destroy this class' instance
              * @brief Default Destructor
             */
-            virtual ~RCLMQTTBridgeManager();
+            virtual ~MQTTConnection();
 
             /**
              * @brief function for MQTT publish
@@ -330,16 +330,16 @@ namespace ros2_mqtt_bridge {
     };
 
     /**
-     * @class RCLConnectionManager
+     * @class RCLConnection
      * @brief final class for defines template functions what implements rclcpp ROS2 connections
     */
-    class RCLConnectionManager final {
+    class RCLConnection final {
         public :
             /**
              * Create a new this class' instance
              * @brief Default Constructor
             */
-            inline explicit RCLConnectionManager() {
+            inline explicit RCLConnection() {
 
             };
 
@@ -347,7 +347,7 @@ namespace ros2_mqtt_bridge {
              * Destroy this class' instance
              * @brief Default Destructor
             */
-            inline virtual ~RCLConnectionManager() {
+            inline virtual ~RCLConnection() {
 
             };
 
@@ -448,10 +448,10 @@ namespace ros2_mqtt_bridge {
     };
 
     /**
-     * @class RCLNode
+     * @class Bridge
      * @brief final class for initialize rclcpp::Node what defines rclcpp::Node
     */
-    class RCLNode final : public rclcpp::Node {
+    class Bridge final : public rclcpp::Node {
         private :
             /**
              * @brief Shared Pointer for rclcpp::Node
@@ -459,28 +459,28 @@ namespace ros2_mqtt_bridge {
             rclcpp::Node::SharedPtr rcl_node_ptr_;
 
             /**
-             * @brief shared pointer for ros2_mqtt_bridge::RCLMQTTBridgeManager
-             * @see ros2_mqtt_bridge::RCLMQTTBridgeManager
+             * @brief shared pointer for ros2_mqtt_bridge::MQTTConnection
+             * @see ros2_mqtt_bridge::MQTTConnection
             */
-            std::shared_ptr<ros2_mqtt_bridge::RCLMQTTBridgeManager> rcl_mqtt_bridge_manager_ptr_;
+            std::shared_ptr<ros2_mqtt_bridge::MQTTConnection> mqtt_connection_ptr_;
 
             /**
-             * @brief shared pointer for ros2_mqtt_bridge::RCLConnectionManager
-             * @see ros2_mqtt_bridge::RCLConnectionManager
+             * @brief shared pointer for ros2_mqtt_bridge::RCLConnection
+             * @see ros2_mqtt_bridge::RCLConnection
             */
-            std::shared_ptr<ros2_mqtt_bridge::RCLConnectionManager> rcl_connection_manager_ptr_;
+            std::shared_ptr<ros2_mqtt_bridge::RCLConnection> rcl_connection_ptr_;
         public :
             /**
              * Create a new this class' instance
              * @brief Default Constructor
             */
-            explicit RCLNode();
+            explicit Bridge();
 
             /**
              * Destroy this class' instance
              * @brief Default Destructor
             */
-            virtual ~RCLNode();
+            virtual ~Bridge();
 
             /**
              * function for handle signal_input when program exit
@@ -488,7 +488,7 @@ namespace ros2_mqtt_bridge {
              * @return void
              * @see signal_input.h
             */
-            static void sig_handler(int signal_input);
+            static void signal_handler(int signal_input);
     };
 }
 
