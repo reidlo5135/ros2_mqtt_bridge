@@ -30,6 +30,9 @@ find_package(geometry_msgs REQUIRED)
 find_package(tf2_msgs REQUIRED)
 find_package(can_msgs REQUIRED)
 find_package(builtin_interfaces REQUIRED)
+find_package(rosidl_typesupport_protobuf REQUIRED)
+find_package(rosidl_typesupport_protobuf_c REQUIRED)
+find_package(rosidl_typesupport_protobuf_cpp REQUIRED)
 find_package(jsoncpp REQUIRED)
 find_library(PAHO_MQTT_CPP_LIB paho-mqttpp3 PATHS /usr/local/lib REQUIRED)
 
@@ -50,6 +53,7 @@ ament_target_dependencies(
   geometry_msgs
   tf2_msgs
   can_msgs
+  rosidl_typesupport_protobuf
 )
 
 target_link_libraries(
@@ -73,6 +77,7 @@ ament_target_dependencies(
   geometry_msgs
   tf2_msgs
   can_msgs
+  rosidl_typesupport_protobuf
 )
 
 target_link_libraries(

@@ -54,6 +54,7 @@
 #include <rclcpp_action/rclcpp_action.hpp>
 #include <rclcpp/executor.hpp>
 #include <rcutils/logging_macros.h>
+#include <rosidl_typesupport_protobuf/message_type_support.hpp>
 
 #include <std_msgs/msg/string.hpp>
 #include <std_msgs/msg/header.hpp>
@@ -86,7 +87,6 @@
 #include <can_msgs/msg/control_hardware.hpp>
 
 #include <nav2_msgs/action/navigate_to_pose.hpp>
-
 
 /**
  * ------------------------------------------------------

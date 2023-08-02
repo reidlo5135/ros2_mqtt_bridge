@@ -603,7 +603,7 @@ void ros2_mqtt_bridge::RCLMQTTBridgeManager::bridge_rcl_to_mqtt() {
 
                         RCLCPP_INFO(rcl_node_ptr_->get_logger(), "RCL [%s] publisher is type [%sstring]", rcl_publisher_topic, RCL_STD_MSGS_TYPE);
                         RCLCPP_LINE_INFO();
-
+                        
                         const std::function<void(std::shared_ptr<rcl_message_type_t>)> & rcl_chatter_callback = [this, rcl_publisher_topic](const std_msgs::msg::String::SharedPtr rcl_chatter_callback_data_ptr) {
                             const std::string & std_msgs_string_json_string = this->rcl_std_msgs_converter_ptr_->std_msgs_string_to_json_string(rcl_chatter_callback_data_ptr);
                             this->flag_bridge_rcl_to_mqtt(rcl_publisher_topic, std_msgs_string_json_string);
