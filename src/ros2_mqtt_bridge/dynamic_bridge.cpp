@@ -83,7 +83,10 @@ void ros2_mqtt_bridge::MQTTConnection::mqtt_connect() {
          * - when failed to connect, retry to establish MQTT connection and wait for 30 seconds
         */
         mqtt_async_client_.connect(mqtt_connect_opts)->wait_for(std::chrono::seconds(60));
-        if(mqtt_async_client_.is_connected()) {
+
+        const bool & is_mqtt_async_client_connected = mqtt_async_client_.is_connected();
+
+        if(is_mqtt_async_client_connected) {
             RCUTILS_LOG_INFO_NAMED(RCL_NODE_NAME, "MQTT connection success");
             RCLCPP_LINE_INFO();
             mqtt_async_client_.set_callback(*this);
@@ -812,7 +815,7 @@ ros2_mqtt_bridge::Bridge::~Bridge() {
 * @see signal_input.h
 */
 void ros2_mqtt_bridge::Bridge::signal_handler(int signal_input) {
-    RCUTILS_LOG_INFO_NAMED(RCL_NODE_NAME, "stopped with SIG [%i]", signal_input);
+    RCUTILS_LOG_INFO_NAMED(RCL_NODE_NAME, "===== ros2_mqtt_bridge has been terminated with SIG [%i] =====", signal_input);
     RCLCPP_LINE_INFO();
 	signal(signal_input, SIG_IGN);
 	exit(RCL_EXIT_FLAG);
