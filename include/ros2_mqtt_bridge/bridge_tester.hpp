@@ -35,10 +35,10 @@ namespace ros2_mqtt_bridge {
             rclcpp::Node::SharedPtr rcl_node_ptr_;
             
             /**
-             * @brief shared pointer for ros2_mqtt_bridge::RCLConnectionManager
-             * @see ros2_mqtt_bridge::RCLConnectionManager
+             * @brief shared pointer for ros2_mqtt_bridge::RCLConnection
+             * @see ros2_mqtt_bridge::RCLConnection
             */
-            std::shared_ptr<ros2_mqtt_bridge::RCLConnectionManager> rcl_connection_manager_ptr_;
+            std::shared_ptr<ros2_mqtt_bridge::RCLConnection> rcl_connection_manager_ptr_;
             
             /**
              * @brief shared pointer for rclcpp::TimerBase
@@ -149,7 +149,7 @@ namespace ros2_mqtt_bridge {
              * @return void
              * @see signal_input.h
             */
-            static void sig_handler(int signal_input);
+            static void signal_handler(int signal_input);
     };
 }
 
