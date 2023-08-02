@@ -16,9 +16,6 @@
   <depend>tf2_msgs</depend>
   <depend>can_msgs</depend>
   <depend>builtin_interfaces</depend>
-  <depend>rosidl_typesupport_protobuf</depend>
-  <depend>rosidl_typesupport_protobuf_c</depend>
-  <depend>rosidl_typesupport_protobuf_cpp</depend>
   
   <buildtool_depend>ament_cmake</buildtool_depend>
 
